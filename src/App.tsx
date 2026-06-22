@@ -38,6 +38,18 @@ interface ComponentData {
   files: ComponentFile[];
 }
 
+const ASSETS_BASE_URL = import.meta.env.VITE_ASSETS_BASE_URL || '';
+
+function getAssetUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  const base = ASSETS_BASE_URL.endsWith('/') ? ASSETS_BASE_URL.slice(0, -1) : ASSETS_BASE_URL;
+  const path = url.startsWith('/') ? url : `/${url}`;
+  return `${base}${path}`;
+}
+
 export default function App() {
   const [components, setComponents] = useState<ComponentData[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -972,7 +984,7 @@ const ComponentCard = memo(({
       }`}>
         {component.imageUrl ? (
           <img 
-            src={isHovered && component.gifUrl ? component.gifUrl : component.imageUrl}
+            src={isHovered && component.gifUrl ? getAssetUrl(component.gifUrl) : getAssetUrl(component.imageUrl)}
             alt={component.title}
             className="absolute inset-0 w-full h-full object-cover"
             loading="lazy"
@@ -980,7 +992,7 @@ const ComponentCard = memo(({
         ) : component.videoUrl ? (
           <video 
             ref={videoRef}
-            src={component.videoUrl}
+            src={getAssetUrl(component.videoUrl)}
             className="absolute inset-0 w-full h-full object-cover"
             muted
             loop
@@ -1059,7 +1071,9 @@ function ComponentViewerModal({
   const [duration, setDuration] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
 
-  const absoluteZipUrl = `${window.location.origin}${component.zipUrl}`;
+  const absoluteZipUrl = getAssetUrl(component.zipUrl).startsWith('http')
+    ? getAssetUrl(component.zipUrl)
+    : `${window.location.origin}${component.zipUrl}`;
   const fileListText = component.files.map(f => `   - ${f.path}`).join('\n');
 
   const agentPrompt = t.agentPrompt(component.title, absoluteZipUrl, component.category, fileListText);
@@ -1187,7 +1201,7 @@ function ComponentViewerModal({
             </button>
 
             <a
-              href={component.zipUrl}
+              href={getAssetUrl(component.zipUrl)}
               className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer border ${
                 theme === 'dark'
                   ? 'border-zinc-800 text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
@@ -1226,7 +1240,7 @@ function ComponentViewerModal({
                 <>
                   <video
                     ref={videoRef}
-                    src={component.videoUrl}
+                    src={getAssetUrl(component.videoUrl)}
                     className="w-full h-full object-contain cursor-pointer"
                     autoPlay
                     loop
@@ -1283,7 +1297,7 @@ function ComponentViewerModal({
                 </>
               ) : component.imageUrl ? (
                 <img
-                  src={component.imageUrl}
+                  src={getAssetUrl(component.imageUrl)}
                   alt={component.title}
                   className="w-full h-full object-contain"
                 />
