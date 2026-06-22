@@ -11,7 +11,6 @@ import {
   Info,
   Clock,
   Award,
-  Settings,
   ChevronRight,
   Home,
   Menu,
@@ -715,6 +714,9 @@ export default function App() {
                               onToggleFavorite={(id, e) => toggleFavorite(`${comp.category}:${id}`, e)}
                               theme={theme}
                               index={compIndex}
+                              noPreviewText={t.noPreview}
+                              addToFavoritesText={t.addToFavorites}
+                              removeFromFavoritesText={t.removeFromFavorites}
                             />
                           ))
                         )}
@@ -784,6 +786,9 @@ export default function App() {
                           onToggleFavorite={(id, e) => toggleFavorite(`${comp.category}:${id}`, e)}
                           theme={theme}
                           index={compIndex}
+                          noPreviewText={t.noPreview}
+                          addToFavoritesText={t.addToFavorites}
+                          removeFromFavoritesText={t.removeFromFavorites}
                         />
                       ))}
                     </div>
@@ -1044,7 +1049,7 @@ function ComponentViewerModal({
   isFavorite: boolean,
   onToggleFavorite: () => void,
   theme: 'light' | 'dark',
-  t: typeof import('./i18n').translations.pt
+  t: any
 }) {
   const [copied, setCopied] = useState<boolean>(false);
   const videoRef = useRef<HTMLVideoElement>(null);
