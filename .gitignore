@@ -25,4 +25,5 @@ dist-ssr
 
 # Vance Library Data & Extracted Components
 /300 Awwwards components/
-/public/components/
+/public/components/**/extracted/
+check_sizes.cjs
