@@ -1,0 +1,256 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap');
+
+/* ===============================================
+   GLOBAL RESET
+   Wipes default browser spacing and borders
+   so we start from a predictable baseline.
+   =============================================== */
+* {
+	padding: 0px;
+	margin: 0px;
+	border: 0px;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	text-decoration: none;
+}
+
+*::before,
+*::after {
+	display: inline-block;
+}
+
+/* Full-height page so .hero can use 100svh correctly */
+html,
+body {
+	height: 100%;
+}
+
+body {
+	min-width: 320px;
+	color: #000;
+	font-family: 'Playfair Display', serif;
+	font-size: 16px;
+}
+
+/* ===============================================
+   HERO
+   Full-screen background image with a centered title.
+   =============================================== */
+.hero {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	/* svh = small viewport height — avoids mobile URL bar jumps */
+	height: 100svh;
+	overflow: hidden;
+	background: url('./img/main-img.png') center/cover no-repeat;
+	padding: 0 15px;
+}
+
+.hero__title {
+	text-align: center;
+	color: #fff;
+	/* Fluid type: 45px min, 10vw preferred, 192px max */
+	font-size: clamp(45px, 10vw, 192px);
+	font-weight: 500;
+	/* "difference" blend keeps the title legible over ANY bg color —
+	   it inverts whatever is behind it. Essential when the menu
+	   overlay (white) slides in on top of a photo. */
+	mix-blend-mode: difference;
+}
+
+/* ===============================================
+   BLOCK: nav
+   Fixed top bar. Sits above the menu overlay so
+   the toggle button stays clickable at all times.
+   =============================================== */
+.nav {
+	position: fixed;
+	z-index: 2;
+	width: 100%;
+}
+
+.nav__inner {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 15px;
+	/* Cap the content width on huge screens */
+	max-width: 1650px;
+	margin: 0 auto;
+}
+
+.nav__logo {
+	color: #fff;
+	/* Subtle shadow keeps white text readable on light images */
+	text-shadow: 0 1px 2px rgb(0, 0, 0);
+	display: flex;
+	justify-content: center;
+	text-align: center;
+	text-transform: uppercase;
+	font-size: 40px;
+	font-weight: 500;
+}
+
+/* Circular MENU toggle button */
+.nav__btn-toggle {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 80px;
+	height: 80px;
+	background-color: #fff;
+	border: 1px solid #000;
+	border-radius: 50%;
+	cursor: pointer;
+	font-size: 16px;
+}
+
+/* ===============================================
+   BLOCK: menu
+   Full-screen overlay that is hidden until opened.
+   pointer-events: none lets clicks pass through to
+   the nav button while the menu is closed.
+   =============================================== */
+.menu {
+	position: fixed;
+	top: 0;
+	left: 0;
+	z-index: 1;
+	width: 100%;
+	height: 100svh;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+/* MODIFIER: when open, capture pointer events (clickable links) */
+.menu.active {
+	pointer-events: all;
+}
+
+/* ELEMENT: full-size container holding the two background halves */
+.menu__bg {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+}
+
+/* ELEMENT: each half is a 50%-wide viewport that clips its rotating child.
+   Left half pinned to the left, right half pinned to the right. */
+.menu__bg-side {
+	position: absolute;
+	width: 50%;
+	height: 100%;
+	/* Clip the oversized rotated box so it doesn't overflow */
+	overflow: hidden;
+}
+
+.menu__bg-side--left  { left: 0;  }
+.menu__bg-side--right { right: 0; }
+
+/* ELEMENT: the actual rotating box inside each half.
+   Scale(2) gives it room to rotate without showing empty corners.
+   GSAP animates `rotate` from 180 (closed) to 0 (open). */
+.menu__bg-box {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	/* Tells the browser to prepare this for transform animations */
+	will-change: transform;
+}
+
+/* Left box rotates around the inner edge (100% 50% = right-center of left half) */
+.menu__bg-box--left {
+	background: #fff;
+	transform-origin: 100% 50%;
+	transform: rotate(180deg) scale(2);
+}
+
+/* Right box rotates around its inner edge (0% 50% = left-center of right half) */
+.menu__bg-box--right {
+	background: #fff;
+	transform-origin: 0% 50%;
+	transform: rotate(-180deg) scale(2);
+}
+
+/* ELEMENT: two-column layout sitting on top of the background */
+.menu__content {
+	position: absolute;
+	display: flex;
+	width: 100%;
+	height: 100%;
+	overflow-y: auto;
+}
+
+.menu__column {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 32px;
+	text-transform: uppercase;
+	/* Fluid type between 24px and 64px */
+	font-size: clamp(24px, 2.5vw, 64px);
+	line-height: 1.1;
+}
+
+.menu__link {
+	color: #000;
+}
+
+/* SplitText wraps each line in a `.line` span that starts translated
+   110% down (hidden below its mask). GSAP slides it up to y: 0. */
+.menu a .line,
+.menu p .line {
+	transform: translateY(110%);
+	will-change: transform;
+}
+
+/* ===============================================
+   MOBILE (<= 550px)
+   Collapse to a single-column layout and hide the
+   right-side background so the reveal is simpler.
+   =============================================== */
+@media (max-width: 550px) {
+	.nav {
+		flex-direction: row;
+	}
+
+	.nav__logo {
+		font-size: 30px;
+	}
+
+	.nav__btn-toggle {
+		width: 60px;
+		height: 60px;
+		font-size: 14px;
+	}
+
+	/* Only one half is used on mobile; hide the right half entirely */
+	.menu__bg-side--right {
+		display: none;
+	}
+
+	.menu__bg-side--left {
+		width: 100%;
+	}
+
+	/* Stack the two columns vertically */
+	.menu__content {
+		flex-direction: column;
+		padding: 96px 15px;
+		gap: 50px;
+	}
+
+	.menu__column {
+		align-items: flex-start;
+		gap: 15px;
+	}
+}

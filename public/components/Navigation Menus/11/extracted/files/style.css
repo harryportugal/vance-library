@@ -1,0 +1,297 @@
+/* =====================================================
+   TOKENS
+   ===================================================== */
+:root {
+   --c-bg:       #eeeae0;         /* warm off-white */
+   --c-fg:       #1b1b1b;
+   --c-accent:   #ff6b5b;
+   --c-accent-2: #f2c14e;
+   --c-accent-3: #6cb5c9;
+   --c-muted:    rgba(27, 27, 27, 0.55);
+
+   --ff-display: 'Archivo Black', sans-serif;
+   --ff-serif:   'Instrument Serif', Georgia, serif;
+   --ff-mono:    'JetBrains Mono', ui-monospace, monospace;
+
+   --ease:       cubic-bezier(0.76, 0, 0.24, 1);
+   --ease-out:   cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* =====================================================
+   RESET
+   ===================================================== */
+*, *::before, *::after {
+   box-sizing: border-box;
+   margin: 0;
+   padding: 0;
+}
+
+html, body {
+   height: 100%;
+   overflow: hidden;
+}
+
+body {
+   background: var(--c-bg);
+   color: var(--c-fg);
+   font-family: var(--ff-mono);
+   font-size: 13px;
+   -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+ul { list-style: none; }
+button {
+   font: inherit;
+   color: inherit;
+   background: none;
+   border: 0;
+   cursor: pointer;
+}
+em { font-style: italic; }
+img, svg { display: block; max-width: 100%; }
+
+/* =====================================================
+   TOPBAR — stays above the menu via z-index 50
+   ===================================================== */
+.topbar {
+   position: fixed;
+   top: 0;
+   left: 0;
+   right: 0;
+   z-index: 50;
+   display: grid;
+   grid-template-columns: auto 1fr auto;
+   align-items: center;
+   gap: 40px;
+   padding: 20px 28px;
+}
+
+.logo {
+   display: inline-flex;
+   align-items: center;
+   gap: 10px;
+   color: var(--c-fg);
+   font-family: var(--ff-display);
+   font-size: 16px;
+   letter-spacing: -0.01em;
+}
+
+.topbar__meta {
+   justify-self: center;
+   display: inline-flex;
+   align-items: center;
+   gap: 10px;
+   font-size: 12px;
+   text-transform: uppercase;
+   letter-spacing: 0.08em;
+   color: var(--c-muted);
+}
+
+.topbar__dot {
+   width: 7px;
+   height: 7px;
+   border-radius: 50%;
+   background: var(--c-accent);
+   animation: blink 1.8s ease-in-out infinite;
+}
+
+@keyframes blink {
+   0%, 100% { opacity: 1;   }
+   50%      { opacity: 0.3; }
+}
+
+/* =====================================================
+   BTN — pill with centred label
+   ===================================================== */
+.btn {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   height: 40px;
+   padding: 0 22px;
+   border-radius: 999px;
+   background: var(--c-fg);
+   color: var(--c-bg);
+   transition: background 0.25s var(--ease),
+               color 0.25s var(--ease);
+}
+
+.btn:hover {
+   background: var(--c-accent);
+}
+
+body.is-open .btn {
+   background: var(--c-bg);
+   color: var(--c-fg);
+}
+
+.btn__label {
+   font-family: var(--ff-mono);
+   font-size: 12px;
+   font-weight: 500;
+   text-transform: uppercase;
+   letter-spacing: 0.08em;
+   line-height: 1;
+}
+
+/* =====================================================
+   HERO — single centred word
+   ===================================================== */
+.hero {
+   height: 100vh;
+   display: grid;
+   place-items: center;
+   padding: 40px;
+}
+
+.hero__word {
+   font-family: var(--ff-display);
+   font-weight: 400;
+   font-size: clamp(96px, 22vw, 360px);
+   line-height: 0.9;
+   letter-spacing: -0.03em;
+   text-transform: uppercase;
+}
+
+/* =====================================================
+   MENU OVERLAY
+   ===================================================== */
+.menu {
+   position: fixed;
+   inset: 0;
+   z-index: 30;
+   pointer-events: none;
+}
+
+.menu.is-open { pointer-events: auto; }
+
+/* 6 vertical coloured panels fill the screen on open.
+   CSS grid gives equal columns; GSAP animates each from
+   translateY(-101%) with a stagger. */
+.panels {
+   position: absolute;
+   inset: 0;
+   display: grid;
+   grid-template-columns: repeat(6, 1fr);
+}
+
+.panels__col {
+   background: var(--bg, #000);
+   transform: translateY(-101%);
+   will-change: transform;
+}
+
+/* Content sits above the panels */
+.menu__content {
+   position: absolute;
+   inset: 0;
+   z-index: 2;
+   padding: 120px 28px 28px;
+   display: flex;
+   flex-direction: column;
+   justify-content: space-between;
+}
+
+/* =====================================================
+   NAV — letters individually split + revealed
+   ===================================================== */
+.nav {
+   flex: 1;
+   display: flex;
+   align-items: center;
+}
+
+.nav__list {
+   display: flex;
+   flex-direction: column;
+   gap: 4px;
+   width: 100%;
+}
+
+.nav__item {
+   /* Each row is clipped so its letters can rise from below
+      without bleeding into neighbouring rows. */
+   overflow: hidden;
+   line-height: 0.9;
+}
+
+.nav__link {
+   display: block;
+   font-family: var(--ff-display);
+   font-weight: 400;
+   font-size: clamp(64px, 13vw, 200px);
+   line-height: 0.9;
+   letter-spacing: -0.02em;
+   text-transform: uppercase;
+   color: #ffffff;
+   /* mix-blend-mode: difference automatically inverts the
+      letter colour against whatever panel sits beneath it —
+      this solves the "letter disappears on same-coloured
+      panel" bug that the previous random palette had. */
+   mix-blend-mode: difference;
+}
+
+/* Each <span> is one character — JS wraps them on load.
+   Starting hidden: y:100% + opacity:0 so they can rise
+   into view staggered character-by-character. */
+.nav__link span {
+   display: inline-block;
+   will-change: transform, opacity;
+}
+
+/* Hover — simple scale pulse, letters stay white so blend
+   mode keeps doing its thing. No random colors. */
+.nav__link:hover span {
+   animation: letterPulse 0.5s var(--ease-out) forwards;
+}
+
+@keyframes letterPulse {
+   0%   { transform: translateY(0)   scale(1);   }
+   50%  { transform: translateY(-8px) scale(1.05); }
+   100% { transform: translateY(0)   scale(1);   }
+}
+
+/* =====================================================
+   MENU FOOT
+   ===================================================== */
+.menu__foot {
+   display: flex;
+   align-items: baseline;
+   gap: 16px;
+   color: var(--c-bg);
+   font-family: var(--ff-mono);
+   font-size: 13px;
+   text-transform: uppercase;
+   letter-spacing: 0.08em;
+}
+
+.menu__foot-label {
+   opacity: 0.6;
+}
+
+.menu__foot a {
+   border-bottom: 1px solid rgba(238, 234, 224, 0.35);
+   padding-bottom: 2px;
+   transition: border-color 0.3s;
+}
+
+.menu__foot a:hover {
+   border-color: var(--c-bg);
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+@media (max-width: 900px) {
+   .topbar { grid-template-columns: auto 1fr auto; gap: 16px; padding: 16px 20px; }
+   .topbar__meta { display: none; }
+
+   .nav__link { font-size: 56px; }
+
+   /* Fewer panels on small screens — last two hidden */
+   .panels { grid-template-columns: repeat(4, 1fr); }
+   .panels__col:nth-child(n+5) { display: none; }
+
+   .menu__content { padding: 100px 20px 20px; }
+}

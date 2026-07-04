@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- Automatic High-Performance Local Library Inject -->
+  <script src="/libs/three.min.js"></script>
+  <script src="/libs/GLTFLoader.js"></script>
+  <script src="/libs/gsap.min.js"></script>
+  <script src="/libs/ScrollTrigger.min.js"></script>
+  <script src="/libs/ScrollToPlugin.min.js"></script>
+  <script src="/libs/CustomEase.min.js"></script>
+  <script src="/libs/Flip.min.js"></script>
+  <script src="/libs/Observer.min.js"></script>
+  <script src="/libs/lenis.min.js"></script>
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+    window.SplitType = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Local Library Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Local Library Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Library CDN Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+   <meta charset="UTF-8" />
+   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+   <title>Pocket. — Collection</title>
+
+   <link rel="preconnect" href="https://fonts.googleapis.com" />
+   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+
+   <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+   <!-- ===== HEADER ===== -->
+   <header class="header">
+      <a href="#" class="header__brand">Pocket.</a>
+      <button class="hamburger" id="js-toggle" type="button" aria-label="Open menu">
+         <span></span>
+         <span></span>
+      </button>
+   </header>
+
+   <!-- ===== BANNER ===== -->
+   <main class="banner">
+      <h1 class="banner__headline">Click on the menu button</h1>
+   </main>
+
+   <!-- ===== MENU OVERLAY =====
+        Full-screen white layer.
+        Each row is one product, rendered as:
+           [ LEFT LINE ] [ TITLE ] [ RIGHT LINE ]
+        where line flex ratios come from products.json
+        (leftLineFlex / rightLineFlex).
+        On hover, a big thumbnail slides into a position
+        keyed by `thumbnailPosition` (0–1000) and `offset`. -->
+   <div class="menu" id="js-menu" aria-hidden="true">
+
+      <!-- Top bar inside the menu -->
+      <div class="menu__top">
+         <a href="#" class="menu__brand">Pocket.</a>
+         <button class="menu__close" id="js-close" type="button" aria-label="Close">
+            <span></span>
+            <span></span>
+         </button>
+      </div>
+
+      <!-- Product rows (4 of them)  -->
+      <ul class="rows" id="js-rows">
+
+         <li class="row"
+             data-img="./img/shoe1.jpg"
+             data-left-flex="0"
+             data-right-flex="1"
+             data-thumb-x="600"
+             data-offset="200">
+            <span class="row__line" style="flex: 0"></span>
+            <a href="#" class="row__title">
+               <span class="row__index">01</span>
+               Air Max 90
+            </a>
+            <span class="row__line" style="flex: 1"></span>
+         </li>
+
+         <li class="row"
+             data-img="./img/shoe2.jpg"
+             data-left-flex="3"
+             data-right-flex="1"
+             data-thumb-x="200"
+             data-offset="-500">
+            <span class="row__line" style="flex: 3"></span>
+            <a href="#" class="row__title">
+               <span class="row__index">02</span>
+               New Balance X-90
+            </a>
+            <span class="row__line" style="flex: 1"></span>
+         </li>
+
+         <li class="row"
+             data-img="./img/shoe3.jpg"
+             data-left-flex="1"
+             data-right-flex="3"
+             data-thumb-x="900"
+             data-offset="300">
+            <span class="row__line" style="flex: 1"></span>
+            <a href="#" class="row__title">
+               <span class="row__index">03</span>
+               Air Max 97 × Off-White
+            </a>
+            <span class="row__line" style="flex: 3"></span>
+         </li>
+
+         <li class="row"
+             data-img="./img/shoe4.jpg"
+             data-left-flex="3"
+             data-right-flex="2"
+             data-thumb-x="100"
+             data-offset="-600">
+            <span class="row__line" style="flex: 3"></span>
+            <a href="#" class="row__title">
+               <span class="row__index">04</span>
+               Yeezy 700 Geode
+            </a>
+            <span class="row__line" style="flex: 2"></span>
+         </li>
+
+      </ul>
+
+      <!-- Floating thumbnail — all 4 images pre-mounted in DOM
+           so we never reload an <img> src on hover. We just fade
+           the correct one in and others out → zero disk lag. -->
+      <div class="thumb" id="js-thumb" aria-hidden="true">
+         <img src="./img/shoe1.jpg" alt="" class="thumb__img" data-img="./img/shoe1.jpg" />
+         <img src="./img/shoe2.jpg" alt="" class="thumb__img" data-img="./img/shoe2.jpg" />
+         <img src="./img/shoe3.jpg" alt="" class="thumb__img" data-img="./img/shoe3.jpg" />
+         <img src="./img/shoe4.jpg" alt="" class="thumb__img" data-img="./img/shoe4.jpg" />
+      </div>
+
+      <!-- Bottom meta -->
+      <footer class="menu__foot">
+         <span>Collection / 2026</span>
+         <span id="js-counter">Hover to preview</span>
+         <span>4 products</span>
+      </footer>
+   </div>
+
+   
+   <script src="script.js"></script>
+</body>
+
+</html>

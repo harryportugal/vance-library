@@ -1,0 +1,314 @@
+/* =====================================================
+   TOKENS (matching the original variables.scss)
+   ===================================================== */
+:root {
+   --c-black:     #000000;
+   --c-white:     #ffffff;
+   --c-bg:        #f6f6f6;
+   --c-text:      #12131d;
+   --c-secondary: #434448;
+
+   --ff: 'IBM Plex Sans', system-ui, sans-serif;
+   --ease: cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* =====================================================
+   RESET
+   ===================================================== */
+*, *::before, *::after {
+   box-sizing: border-box;
+   margin: 0;
+   padding: 0;
+}
+
+html, body {
+   height: 100%;
+   overflow: hidden;
+}
+
+body {
+   font-family: var(--ff);
+   font-size: 16px;
+   background: var(--c-white);
+   color: var(--c-text);
+   -webkit-font-smoothing: antialiased;
+}
+
+a {
+   color: inherit;
+   text-decoration: none;
+}
+
+ul { list-style: none; }
+
+button {
+   font: inherit;
+   color: inherit;
+   background: none;
+   border: 0;
+   cursor: pointer;
+}
+
+img {
+   display: block;
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+}
+
+/* =====================================================
+   HEADER
+   ===================================================== */
+.header {
+   position: fixed;
+   top: 0;
+   left: 0;
+   right: 0;
+   z-index: 8;
+   padding: 0 88px;
+}
+
+.header > * {
+   height: 120px;
+}
+
+.header {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   padding-block: 0;
+}
+
+.header__brand {
+   display: inline-flex;
+   align-items: center;
+   font-size: 1.4rem;
+   font-weight: 500;
+}
+
+/* =====================================================
+   HAMBURGER
+   ===================================================== */
+.hamburger {
+   display: inline-flex;
+   flex-direction: column;
+   justify-content: center;
+   gap: 6px;
+   padding: 12px 0;
+}
+
+.hamburger span {
+   width: 30px;
+   height: 3px;
+   background: var(--c-text);
+   transition: transform 0.3s var(--ease);
+}
+
+.hamburger:hover span:first-child { transform: translateX(-4px); }
+.hamburger:hover span:last-child  { transform: translateX( 4px); }
+
+/* =====================================================
+   BANNER
+   ===================================================== */
+.banner {
+   display: grid;
+   place-items: center;
+   height: 100vh;
+}
+
+.banner__headline {
+   font-size: 3rem;
+   font-weight: 400;
+   color: #fff;
+   mix-blend-mode: difference;
+}
+
+/* =====================================================
+   MENU — full-screen overlay
+   ===================================================== */
+.menu {
+   position: fixed;
+   inset: 0;
+   z-index: 20;
+   background: var(--c-white);
+   display: grid;
+   grid-template-rows: auto 1fr auto;
+   /* Hidden state: clipped to zero at the top */
+   clip-path: inset(0 0 100% 0);
+   pointer-events: none;
+}
+
+.menu.is-open { pointer-events: auto; }
+
+/* Menu top = brand + close */
+.menu__top {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   height: 120px;
+   padding: 0 88px;
+}
+
+.menu__brand {
+   font-size: 1.4rem;
+   font-weight: 500;
+   color: var(--c-text);
+}
+
+/* Close button = X */
+.menu__close {
+   position: relative;
+   width: 44px;
+   height: 44px;
+   transition: transform 0.3s var(--ease);
+}
+
+.menu__close span {
+   position: absolute;
+   top: 50%;
+   left: 50%;
+   width: 30px;
+   height: 2px;
+   background: var(--c-text);
+}
+
+.menu__close span:first-child  { transform: translate(-50%, -50%) rotate( 45deg); }
+.menu__close span:last-child   { transform: translate(-50%, -50%) rotate(-45deg); }
+
+.menu__close:hover { transform: rotate(90deg); }
+
+/* =====================================================
+   ROWS — each row is a full-width horizontal line
+   with the product title breaking it in some spot
+   ===================================================== */
+.rows {
+   display: flex;
+   flex-direction: column;
+   justify-content: center;
+   width: 100%;
+   padding: 0 88px;
+}
+
+.row {
+   display: flex;
+   align-items: center;
+   gap: 32px;
+   padding: 32px 0;
+   cursor: pointer;
+   transition: opacity 0.3s ease;
+}
+
+/* Dimming effect: ONLY when a row is actually hovered,
+   dim the others. Using :has() avoids the old bug where
+   hovering the empty space BETWEEN rows (inside the big
+   .rows container) would dim all rows at once. */
+.rows:has(.row:hover) .row:not(:hover) {
+   opacity: 0.2;
+}
+
+/* The horizontal lines that fill available space.
+   Their flex ratios come from inline styles (from JSON). */
+.row__line {
+   display: block;
+   height: 1px;
+   background: var(--c-text);
+   opacity: 0.4;
+   transform: scaleX(0);
+   transform-origin: left center;
+   will-change: transform;
+}
+
+/* Title in the middle of the row */
+.row__title {
+   flex-shrink: 0;
+   display: inline-flex;
+   align-items: baseline;
+   gap: 20px;
+   font-size: clamp(32px, 4.5vw, 72px);
+   font-weight: 400;
+   letter-spacing: -0.02em;
+   white-space: nowrap;
+   color: var(--c-text);
+   /* Hidden until GSAP animates it in */
+   opacity: 0;
+   transform: translateY(30px);
+   will-change: transform, opacity;
+   transition: letter-spacing 0.4s var(--ease);
+}
+
+.row__title:hover {
+   letter-spacing: 0;
+}
+
+.row__index {
+   font-size: 14px;
+   font-weight: 400;
+   color: var(--c-secondary);
+   letter-spacing: 0.05em;
+}
+
+/* =====================================================
+   THUMB — floating product image
+   ===================================================== */
+/* =====================================================
+   THUMB — floating product image
+   All 4 images are stacked absolutely. Each starts at opacity 0;
+   on hover of the matching row, its opacity fades to 1 via GSAP.
+   No src swapping = no disk reload = no lag.
+   ===================================================== */
+.thumb {
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 420px;
+   height: 280px;
+   z-index: 30;
+   pointer-events: none;
+   opacity: 0;
+   /* Hint the browser to promote this to its own GPU layer —
+      combined with transform: translate3d(0,0,0) on the element,
+      hover moves become buttery smooth. */
+   will-change: transform, opacity;
+   transform: translate3d(0, 0, 0);
+}
+
+/* Each image sits stacked on top of the next */
+.thumb__img {
+   position: absolute;
+   inset: 0;
+   width: 100%;
+   height: 100%;
+   object-fit: cover;
+   opacity: 0;
+   will-change: opacity;
+}
+
+/* =====================================================
+   MENU FOOTER
+   ===================================================== */
+.menu__foot {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   padding: 32px 88px;
+   font-size: 14px;
+   color: var(--c-secondary);
+   border-top: 1px solid rgba(18, 19, 29, 0.1);
+}
+
+/* =====================================================
+   RESPONSIVE
+   ===================================================== */
+@media (max-width: 768px) {
+   .header, .menu__top, .rows, .menu__foot {
+      padding-left: 32px;
+      padding-right: 32px;
+   }
+
+   .row { gap: 16px; padding: 16px 0; }
+   .row__title { font-size: 28px; gap: 10px; }
+
+   .thumb { display: none; }
+
+   .menu__foot { flex-direction: column; gap: 8px; align-items: flex-start; }
+}

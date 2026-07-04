@@ -1,0 +1,128 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+   width: 100%;
+   height: 100%;
+   overflow: hidden;
+   background: #ffffff;
+   font-family: 'Geist', system-ui, sans-serif;
+   color: #111111;
+   -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+button {
+   font: inherit;
+   color: inherit;
+   background: none;
+   border: 0;
+   cursor: pointer;
+}
+
+/* =====================================================
+   HERO — white, centered text
+   ===================================================== */
+.hero {
+   position: fixed;
+   inset: 0;
+   z-index: 1;
+   display: grid;
+   place-items: center;
+   padding: 40px;
+}
+
+.hero h1 {
+   max-width: 18ch;
+   font-size: clamp(48px, 7vw, 104px);
+   font-weight: 500;
+   letter-spacing: -0.035em;
+   line-height: 1.05;
+   text-align: center;
+}
+
+/* =====================================================
+   MENU — white panel, centered links
+   ===================================================== */
+.menu {
+   position: fixed;
+   inset: 0;
+   z-index: 30;
+   background: #ffffff;
+   display: grid;
+   place-items: center;
+   opacity: 0;
+   pointer-events: none;
+}
+
+.menu.is-open {
+   opacity: 1;
+   pointer-events: auto;
+}
+
+.menu nav {
+   display: flex;
+   flex-direction: column;
+   gap: 8px;
+   text-align: center;
+}
+
+.menu a {
+   display: inline-block;
+   font-size: clamp(48px, 7vw, 104px);
+   font-weight: 500;
+   letter-spacing: -0.03em;
+   line-height: 1;
+   color: #111111;
+   transition: opacity 0.3s ease;
+}
+
+.menu nav:has(a:hover) a:not(:hover) {
+   opacity: 0.2;
+}
+
+/* =====================================================
+   PIXEL GRID — white blocks for the transition
+   ===================================================== */
+.pixel-grid {
+   position: fixed;
+   inset: 0;
+   z-index: 40;
+   pointer-events: none;
+   overflow: hidden;
+}
+
+.pixel-block {
+   position: absolute;
+   background: #111111;
+   opacity: 0;
+   will-change: opacity;
+}
+
+/* =====================================================
+   TOP BAR
+   ===================================================== */
+header {
+   position: fixed;
+   top: 0;
+   left: 0;
+   right: 0;
+   z-index: 60;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   padding: 28px 36px;
+   color: #111111;
+   font-size: 15px;
+   font-weight: 500;
+   letter-spacing: -0.01em;
+}
+
+header button {
+   letter-spacing: -0.01em;
+}
+
+@media (max-width: 720px) {
+   header { padding: 18px 20px; font-size: 13px; }
+   .hero h1 { font-size: 40px; }
+   .menu a  { font-size: 40px; }
+}
