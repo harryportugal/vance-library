@@ -1,0 +1,32 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100vh;
+  background: #161616;
+  overflow: hidden;
+}
+
+.text {
+  position: absolute;
+  pointer-events: none;
+  font-family: venn-extended, sans-serif;
+  font-weight: 700;
+  font-style: normal;
+  font-size: 6em;
+  -webkit-text-stroke: 1px #fff;
+  /*font-weight: 500;
+  text-transform: uppercase;*/
+  color: #161616;
+}
+
+.text span {
+  color: #fff;
+}
+
+.center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}

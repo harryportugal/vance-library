@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+
+<head>
+  <!-- Automatic High-Performance Local Library Inject -->
+  <script  type="module" src="/libs/three.min.js"></script>
+  <script  type="module" src="/libs/GLTFLoader.js"></script>
+  <script  type="module" src="/libs/gsap.min.js"></script>
+  <script  type="module" src="/libs/ScrollTrigger.min.js"></script>
+  <script  type="module" src="/libs/ScrollToPlugin.min.js"></script>
+  <script  type="module" src="/libs/CustomEase.min.js"></script>
+  <script  type="module" src="/libs/Flip.min.js"></script>
+  <script  type="module" src="/libs/Observer.min.js"></script>
+  <script  type="module" src="/libs/lenis.min.js"></script>
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+    window.SplitType = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Local Library Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Local Library Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Library CDN Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Inline Menu Layout with Page Animation </title>
+	<meta name="description" content="An inline menu layout with a playful hover animation and a gallery content preview panel." />
+	<meta name="keywords" content="layout, web design, html, animation, hover effect, menu, gallery layout, css" />
+	<meta name="author" content="" />
+	<link rel="shortcut icon" href="favicon.ico">
+	<link rel="stylesheet" href="https://use.typekit.net/zkq2mjw.css">
+	<link rel="stylesheet" type="text/css" href="css/base.css" />
+	<script  type="module" src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js"></script>
+	<script>
+	document.documentElement.className = "js";
+	var supportsCssVars = function() { var e, t = document.createElement("style"); return t.innerHTML = "root: { --tmp-var: bold; }", document.head.appendChild(t), e = !!(window.CSS && window.CSS.supports && window.CSS.supports("font-weight", "var(--tmp-var)")), t.parentNode.removeChild(t), e };
+	supportsCssVars() || alert("Please view this demo in a modern browser that supports CSS Variables.");
+	</script>
+</head>
+
+<body class="demo-1 loading">
+	<main>
+
+		<nav class="menu">
+			<a class="menu__item" data-img="img/1.jpg"><span class="menu__item-inner-wrap"><span class="menu__item-inner">sirens</span></span><sup class="menu__item-number">(5)</sup></a>
+			<a class="menu__item" data-img="img/6.jpg"><span class="menu__item-inner-wrap"><span class="menu__item-inner">convoys</span></span><sup class="menu__item-number">(4)</sup></a>
+			<a class="menu__item" data-img="img/10.jpg"><span class="menu__item-inner-wrap"><span class="menu__item-inner">screens</span></span><sup class="menu__item-number">(3)</sup></a>
+			<a class="menu__item" data-img="img/13.jpg"><span class="menu__item-inner-wrap"><span class="menu__item-inner">alloy</span></span><sup class="menu__item-number">(4)</sup></a>
+			<a class="menu__item" data-img="img/17.jpg"><span class="menu__item-inner-wrap"><span class="menu__item-inner">tv</span></span><sup class="menu__item-number">(4)</sup></a>
+			<a class="menu__item" data-img="img/21.jpg"><span class="menu__item-inner-wrap"><span class="menu__item-inner">lunatic</span></span><sup class="menu__item-number">(5)</sup></a>
+			<a class="menu__item" data-img="img/26.jpg"><span class="menu__item-inner-wrap"><span class="menu__item-inner">irresistible</span></span><sup class="menu__item-number">(6)</sup></a>
+			<a class="menu__item" data-img="img/32.jpg"><span class="menu__item-inner-wrap"><span class="menu__item-inner">frontiers</span></span><sup class="menu__item-number">(3)</sup></a>
+			<a class="menu__item" data-img="img/35.jpg"><span class="menu__item-inner-wrap"><span class="menu__item-inner">barrage</span></span><sup class="menu__item-number">(4)</sup></a>
+			<a class="menu__item" data-img="img/39.jpg"><span class="menu__item-inner-wrap"><span class="menu__item-inner">moet</span></span><sup class="menu__item-number">(5)</sup></a>
+			<a class="menu__item" data-img="img/4.jpg"><span class="menu__item-inner-wrap"><span class="menu__item-inner">rubber</span></span><sup class="menu__item-number">(3)</sup></a>
+			<a class="menu__item" data-img="img/7.jpg"><span class="menu__item-inner-wrap"><span class="menu__item-inner">handy</span></span><sup class="menu__item-number">(4)</sup></a>
+		</nav>
+		<section class="content-wrap">
+			<div class="content">
+				<h2 class="content__title">
+					<span class="content__title-wrap"><span class="content__title-inner">sirens</span></span>
+					<sup class="content__title-number">(4)</sup>
+				</h2>
+				<div class="gallery">
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/1.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Girl in pink</h3>
+							<p class="gallery__item-meta">2016, Paris</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/2.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Overdose</h3>
+							<p class="gallery__item-meta">2015, Bologna</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/3.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Premiere</h3>
+							<p class="gallery__item-meta">2014, Brno</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/4.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>face paint</h3>
+							<p class="gallery__item-meta">2011, Copenhagen</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/5.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Recursive</h3>
+							<p class="gallery__item-meta">2010, Berlin</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+				</div>
+			</div>
+			<div class="content">
+				<h2 class="content__title">
+					<span class="content__title-wrap"><span class="content__title-inner">convoys</span></span>
+					<sup class="content__title-number">(4)</sup>
+				</h2>
+				<div class="gallery">
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/6.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Fantasia</h3>
+							<p class="gallery__item-meta">2015, Rome</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/7.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Greenery</h3>
+							<p class="gallery__item-meta">2016, Berlin</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/8.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Freaky</h3>
+							<p class="gallery__item-meta">2017, Davos</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/9.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Shannon</h3>
+							<p class="gallery__item-meta">2018, Sydney</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+				</div>
+			</div>
+			<div class="content">
+				<h2 class="content__title">
+					<span class="content__title-wrap"><span class="content__title-inner">screens</span></span>
+					<sup class="content__title-number">(3)</sup>
+				</h2>
+				<div class="gallery">
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/10.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Big Ben</h3>
+							<p class="gallery__item-meta">2013, London</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/11.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Cranky</h3>
+							<p class="gallery__item-meta">2014, Budapest</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/12.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Love Horse</h3>
+							<p class="gallery__item-meta">2015, Belgrade</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+				</div>
+			</div>
+			<div class="content">
+				<h2 class="content__title">
+					<span class="content__title-wrap"><span class="content__title-inner">alloy</span></span>
+					<sup class="content__title-number">(4)</sup>
+				</h2>
+				<div class="gallery">
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/13.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Lady Brown</h3>
+							<p class="gallery__item-meta">2001, Helsinki</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/14.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>King Candy</h3>
+							<p class="gallery__item-meta">2003, Lisbon</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/15.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>The Book</h3>
+							<p class="gallery__item-meta">2005, Toronto</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/16.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Corner</h3>
+							<p class="gallery__item-meta">2006, Dublin</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+				</div>
+			</div>
+			<div class="content">
+				<h2 class="content__title">
+					<span class="content__title-wrap"><span class="content__title-inner">tv</span></span>
+					<sup class="content__title-number">(4)</sup>
+				</h2>
+				<div class="gallery">
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/17.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Fun fun fun</h3>
+							<p class="gallery__item-meta">2014, Moscow</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/18.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Lovelife</h3>
+							<p class="gallery__item-meta">2015, Shanghai</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/19.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Woodland</h3>
+							<p class="gallery__item-meta">2016, Vienna</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/20.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>No where</h3>
+							<p class="gallery__item-meta">2017, Bern</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+				</div>
+			</div>
+			<div class="content">
+				<h2 class="content__title">
+					<span class="content__title-wrap"><span class="content__title-inner">lunatic</span></span>
+					<sup class="content__title-number">(5)</sup>
+				</h2>
+				<div class="gallery">
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/21.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Fantastic</h3>
+							<p class="gallery__item-meta">2013, Bangkok</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/22.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Cutting Me</h3>
+							<p class="gallery__item-meta">2014, Florence</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/23.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Houseparty</h3>
+							<p class="gallery__item-meta">2015, Ljubljana</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/24.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Gnatus</h3>
+							<p class="gallery__item-meta">2016, Helsinki</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/25.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>What?</h3>
+							<p class="gallery__item-meta">2017, Kiev</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+				</div>
+			</div>
+			<div class="content">
+				<h2 class="content__title">
+					<span class="content__title-wrap"><span class="content__title-inner">irresistible</span></span>
+					<sup class="content__title-number">(6)</sup>
+				</h2>
+				<div class="gallery">
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/26.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Handsome</h3>
+							<p class="gallery__item-meta">1998, Cologne</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/27.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Quo Vadis?</h3>
+							<p class="gallery__item-meta">1999, Rome</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/28.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Prime Time</h3>
+							<p class="gallery__item-meta">2000, Pasadena</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/29.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Doom</h3>
+							<p class="gallery__item-meta">2001, Dublin</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/30.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Algebra</h3>
+							<p class="gallery__item-meta">2002, Bukarest</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/31.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Freedom</h3>
+							<p class="gallery__item-meta">2003, Sarajevo</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+				</div>
+			</div>
+			<div class="content">
+				<h2 class="content__title">
+					<span class="content__title-wrap"><span class="content__title-inner">frontiers</span></span>
+					<sup class="content__title-number">(3)</sup>
+				</h2>
+				<div class="gallery">
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/32.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Apples</h3>
+							<p class="gallery__item-meta">2019, Porto</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/33.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Overdose</h3>
+							<p class="gallery__item-meta">2020, Barcelona</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/34.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Removed</h3>
+							<p class="gallery__item-meta">2021, Osaka</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+				</div>
+			</div>
+			<div class="content">
+				<h2 class="content__title">
+					<span class="content__title-wrap"><span class="content__title-inner">barrage</span></span>
+					<sup class="content__title-number">(4)</sup>
+				</h2>
+				<div class="gallery">
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/35.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Hard Candy</h3>
+							<p class="gallery__item-meta">2021, Agra</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/36.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Longing</h3>
+							<p class="gallery__item-meta">2022, Las Vegas</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/37.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Free Fall</h3>
+							<p class="gallery__item-meta">2023, Pattaya</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/38.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Cracking</h3>
+							<p class="gallery__item-meta">2024, Seoul</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+				</div>
+			</div>
+			<div class="content">
+				<h2 class="content__title">
+					<span class="content__title-wrap"><span class="content__title-inner">moet</span></span>
+					<sup class="content__title-number">(5)</sup>
+				</h2>
+				<div class="gallery">
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/39.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Equals</h3>
+							<p class="gallery__item-meta">2015, Tokyo</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/40.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Forced</h3>
+							<p class="gallery__item-meta">2016, Melbourne</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/1.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Shackles</h3>
+							<p class="gallery__item-meta">2017, London</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/2.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Unknown</h3>
+							<p class="gallery__item-meta">2018, Jerusalem</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/3.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Holy Spirit</h3>
+							<p class="gallery__item-meta">2019, Paris</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+				</div>
+			</div>
+			<div class="content">
+				<h2 class="content__title">
+					<span class="content__title-wrap"><span class="content__title-inner">rubber</span></span>
+					<sup class="content__title-number">(3)</sup>
+				</h2>
+				<div class="gallery">
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/4.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Just You</h3>
+							<p class="gallery__item-meta">2010, Detroit</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/5.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Splitting</h3>
+							<p class="gallery__item-meta">2011, Milan</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/6.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Handy Hat</h3>
+							<p class="gallery__item-meta">2012, Jakarta</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+				</div>
+			</div>
+			<div class="content">
+				<h2 class="content__title">
+					<span class="content__title-wrap"><span class="content__title-inner">handy</span></span>
+					<sup class="content__title-number">(4)</sup>
+				</h2>
+				<div class="gallery">
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/7.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Hallo Friend</h3>
+							<p class="gallery__item-meta">2011, Frankfurt</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/8.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Middle</h3>
+							<p class="gallery__item-meta">2012, Liverpool</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/9.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Location</h3>
+							<p class="gallery__item-meta">2013, Denver</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+					<figure class="gallery__item">
+						<div class="gallery__item-img">
+							<div class="gallery__item-imginner" style="background-image:url(img/10.jpg)"></div>
+						</div>
+						<figcaption class="gallery__item-caption">
+							<h3 class="gallery__item-title" data-splitting>Heavy Womb</h3>
+							<p class="gallery__item-meta">2014, Manchester</p>
+							<button class="gallery__item-more">+</button>
+						</figcaption>
+					</figure>
+				</div>
+			</div>
+			<button class="back"><svg viewBox="0 0 60 34" width="30" height="17"><path d="M60 15.066H7.235L19.128 3.173 16.456.5 0 16.956 16.456 33.41l2.672-2.672L7.235 18.846H60z"/></svg></button>
+		</section>
+
+	</main>
+	<svg class="cursor" width="30" height="30" viewBox="0 0 30 30">
+		<circle class="cursor__inner" cx="15" cy="15" r="7.5" />
+	</svg>
+	<script  type="module" src="js/index.js"></script>
+</body>
+
+</html>

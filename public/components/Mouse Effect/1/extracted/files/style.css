@@ -1,0 +1,74 @@
+/* =====================================================
+   RESET
+   ===================================================== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+   width: 100%;
+   background: #fff;
+   color: #000;
+   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+   font-weight: 400;
+   -webkit-font-smoothing: antialiased;
+}
+
+body {
+   /* Lenis adds its own scroll handling; we keep native
+      overflow behaviour so it can take over. */
+   overflow-x: hidden;
+}
+
+ul { list-style: none; }
+p  { font-size: inherit; line-height: 1; }
+
+/* =====================================================
+   SPACERS — give scroll room above and below
+   ===================================================== */
+.spacer { height: 50vh; }
+
+/* =====================================================
+   PROJECTS list — mix-blend-difference text over canvas
+   ===================================================== */
+.projects {
+   position: relative;
+   z-index: 10;
+   width: 100%;
+   height: 100vh;
+   color: #fff;
+   /* Difference blend keeps the list visible against
+      whatever colour the WebGL plane reveals beneath. */
+   mix-blend-mode: difference;
+}
+
+.projects__list {
+   border-bottom: 1px solid #fff;
+}
+
+.project {
+   padding: 1.25rem;
+   border-top: 1px solid #fff;
+   font-size: 4vw;
+   font-weight: 400;
+   line-height: 1;
+   letter-spacing: -0.01em;
+   cursor: default;
+}
+
+/* =====================================================
+   SCENE — fixed full-viewport canvas host
+   ===================================================== */
+.scene {
+   position: fixed;
+   top: 0;
+   left: 0;
+   width: 100%;
+   height: 100vh;
+   z-index: 1;
+   pointer-events: none;
+}
+
+.scene canvas {
+   display: block;
+   width: 100%;
+   height: 100%;
+}
