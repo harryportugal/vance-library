@@ -501,8 +501,8 @@
       },
       {
         "name": "index.html",
-        "path": "spotify-visualiser-main/index.html",
-        "url": "/components/Grid%20Animations/2/extracted/spotify-visualiser-main/index.html"
+        "path": "spotify-visualiser-main/dist/index.html",
+        "url": "/components/Grid%20Animations/2/extracted/spotify-visualiser-main/dist/index.html"
       },
       {
         "name": "package-lock.json",
@@ -888,6 +888,11 @@
         "name": "vite.config.js",
         "path": "spotify-visualiser-main/vite.config.js",
         "url": "/components/Grid%20Animations/2/extracted/spotify-visualiser-main/vite.config.js"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Grid%20Animations/2/extracted/files/script.js"
       }
     ]
   },
@@ -1785,8 +1790,8 @@
       },
       {
         "name": "index.html",
-        "path": "add-to-cart-main/src/index.html",
-        "url": "/components/Grid%20Animations/6/extracted/add-to-cart-main/src/index.html"
+        "path": "add-to-cart-main/dist/index.html",
+        "url": "/components/Grid%20Animations/6/extracted/add-to-cart-main/dist/index.html"
       },
       {
         "name": "cart.js",
@@ -3152,6 +3157,11 @@
         "name": "style.module.scss",
         "path": "sticky-cursor-main/src/components/stickyCursor/style.module.scss",
         "url": "/components/Physics%20Effects/1/extracted/sticky-cursor-main/src/components/stickyCursor/style.module.scss"
+      },
+      {
+        "name": "index.html",
+        "path": "sticky-cursor-main/out/index.html",
+        "url": "/components/Physics%20Effects/1/extracted/sticky-cursor-main/out/index.html"
       }
     ]
   },
@@ -3318,6 +3328,11 @@
         "name": "tsconfig.json",
         "path": "svg-bezier-curve-master/typescript-tailwind-version/tsconfig.json",
         "url": "/components/Physics%20Effects/2/extracted/svg-bezier-curve-master/typescript-tailwind-version/tsconfig.json"
+      },
+      {
+        "name": "index.html",
+        "path": "svg-bezier-curve-master/out/index.html",
+        "url": "/components/Physics%20Effects/2/extracted/svg-bezier-curve-master/out/index.html"
       }
     ]
   },
@@ -3429,6 +3444,11 @@
         "name": "gsap.jsx",
         "path": "magnetic-button-main/src/components/gsap.jsx",
         "url": "/components/Physics%20Effects/3/extracted/magnetic-button-main/src/components/gsap.jsx"
+      },
+      {
+        "name": "index.html",
+        "path": "magnetic-button-main/out/index.html",
+        "url": "/components/Physics%20Effects/3/extracted/magnetic-button-main/out/index.html"
       }
     ]
   },
@@ -3613,8 +3633,8 @@
       },
       {
         "name": "index.html",
-        "path": "works-main/bubbles/bin/index.html",
-        "url": "/components/Physics%20Effects/9/extracted/works-main/bubbles/bin/index.html"
+        "path": "files/index.html",
+        "url": "/components/Physics%20Effects/9/extracted/files/index.html"
       },
       {
         "name": "build.hxml",
@@ -4295,6 +4315,16 @@
         "name": "wasm.h",
         "path": "works-main/water/wasm/src/wasm.h",
         "url": "/components/Physics%20Effects/9/extracted/works-main/water/wasm/src/wasm.h"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Physics%20Effects/9/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Physics%20Effects/9/extracted/files/script.js"
       }
     ]
   },
@@ -4486,6 +4516,21 @@
         "name": "tsconfig.json",
         "path": "r3f-rapier-ball-of-glass-main/tsconfig.json",
         "url": "/components/Physics%20Effects/10/extracted/r3f-rapier-ball-of-glass-main/tsconfig.json"
+      },
+      {
+        "name": "index.html",
+        "path": "files/index.html",
+        "url": "/components/Physics%20Effects/10/extracted/files/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Physics%20Effects/10/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Physics%20Effects/10/extracted/files/script.js"
       }
     ]
   },
@@ -5370,8 +5415,8 @@
     "files": [
       {
         "name": "index.html",
-        "path": "ashleybrookecs-smudge-revealer/index.html",
-        "url": "/components/SVG%20Animations/11/extracted/ashleybrookecs-smudge-revealer/index.html"
+        "path": "ashleybrookecs-smudge-revealer/dist/index.html",
+        "url": "/components/SVG%20Animations/11/extracted/ashleybrookecs-smudge-revealer/dist/index.html"
       },
       {
         "name": "package.json",
@@ -5387,6 +5432,11 @@
         "name": "styles.css",
         "path": "ashleybrookecs-smudge-revealer/styles.css",
         "url": "/components/SVG%20Animations/11/extracted/ashleybrookecs-smudge-revealer/styles.css"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/SVG%20Animations/11/extracted/files/style.css"
       }
     ]
   },
@@ -5467,8 +5517,8 @@
       },
       {
         "name": "index.html",
-        "path": "3d-text-circle-animation-main/index.html",
-        "url": "/components/Text%20Animations/2/extracted/3d-text-circle-animation-main/index.html"
+        "path": "3d-text-circle-animation-main/dist/index.html",
+        "url": "/components/Text%20Animations/2/extracted/3d-text-circle-animation-main/dist/index.html"
       },
       {
         "name": "package-lock.json",
@@ -5559,6 +5609,11 @@
         "name": "vite.config.js",
         "path": "3d-text-circle-animation-main/vite.config.js",
         "url": "/components/Text%20Animations/2/extracted/3d-text-circle-animation-main/vite.config.js"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Text%20Animations/2/extracted/files/script.js"
       }
     ]
   },
@@ -5623,8 +5678,8 @@
       },
       {
         "name": "index.html",
-        "path": "sketch492-main/index.html",
-        "url": "/components/Text%20Animations/3/extracted/sketch492-main/index.html"
+        "path": "sketch492-main/dist/index.html",
+        "url": "/components/Text%20Animations/3/extracted/sketch492-main/dist/index.html"
       },
       {
         "name": "display.ts",
@@ -5725,6 +5780,11 @@
         "name": "vite.config.ts",
         "path": "sketch492-main/vite.config.ts",
         "url": "/components/Text%20Animations/3/extracted/sketch492-main/vite.config.ts"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Text%20Animations/3/extracted/files/script.js"
       }
     ]
   },
@@ -5917,8 +5977,8 @@
       },
       {
         "name": "index.html",
-        "path": "sketch491-main/index.html",
-        "url": "/components/Text%20Animations/7/extracted/sketch491-main/index.html"
+        "path": "sketch491-main/dist/index.html",
+        "url": "/components/Text%20Animations/7/extracted/sketch491-main/dist/index.html"
       },
       {
         "name": "display.ts",
@@ -6019,6 +6079,11 @@
         "name": "vite.config.ts",
         "path": "sketch491-main/vite.config.ts",
         "url": "/components/Text%20Animations/7/extracted/sketch491-main/vite.config.ts"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Text%20Animations/7/extracted/files/script.js"
       }
     ]
   },
@@ -6244,6 +6309,21 @@
         "name": "AnimatedHeader.jsx",
         "path": "next-text-reveal-animation/src/components/AnimatedHeader/AnimatedHeader.jsx",
         "url": "/components/Text%20Animations/12/extracted/next-text-reveal-animation/src/components/AnimatedHeader/AnimatedHeader.jsx"
+      },
+      {
+        "name": "index.html",
+        "path": "next-text-reveal-animation/out/index.html",
+        "url": "/components/Text%20Animations/12/extracted/next-text-reveal-animation/out/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Text%20Animations/12/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Text%20Animations/12/extracted/files/script.js"
       }
     ]
   },
@@ -6258,8 +6338,8 @@
     "files": [
       {
         "name": "index.html",
-        "path": "seventeenagency-scroll-animation/index.html",
-        "url": "/components/Text%20Animations/13/extracted/seventeenagency-scroll-animation/index.html"
+        "path": "seventeenagency-scroll-animation/dist/index.html",
+        "url": "/components/Text%20Animations/13/extracted/seventeenagency-scroll-animation/dist/index.html"
       },
       {
         "name": "package.json",
@@ -6310,6 +6390,11 @@
         "name": "styles.css",
         "path": "seventeenagency-scroll-animation/styles.css",
         "url": "/components/Text%20Animations/13/extracted/seventeenagency-scroll-animation/styles.css"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Text%20Animations/13/extracted/files/style.css"
       }
     ]
   },
@@ -7128,6 +7213,21 @@
         "name": "Copy.jsx",
         "path": "files/src/components/Copy.jsx",
         "url": "/components/Text%20Animations/17/extracted/files/src/components/Copy.jsx"
+      },
+      {
+        "name": "index.html",
+        "path": "files/out/index.html",
+        "url": "/components/Text%20Animations/17/extracted/files/out/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Text%20Animations/17/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Text%20Animations/17/extracted/files/script.js"
       }
     ]
   },
@@ -7147,8 +7247,8 @@
       },
       {
         "name": "index.html",
-        "path": "demo-main/index.html",
-        "url": "/components/Page%20Transitions/1/extracted/demo-main/index.html"
+        "path": "demo-main/dist/index.html",
+        "url": "/components/Page%20Transitions/1/extracted/demo-main/dist/index.html"
       },
       {
         "name": "package-lock.json",
@@ -8376,6 +8476,21 @@
         "name": "tsconfig.json",
         "path": "barbajs-page-transition-main/tsconfig.json",
         "url": "/components/Page%20Transitions/8/extracted/barbajs-page-transition-main/tsconfig.json"
+      },
+      {
+        "name": "index.html",
+        "path": "barbajs-page-transition-main/dist/index.html",
+        "url": "/components/Page%20Transitions/8/extracted/barbajs-page-transition-main/dist/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Page%20Transitions/8/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Page%20Transitions/8/extracted/files/script.js"
       }
     ]
   },
@@ -8740,6 +8855,21 @@
         "name": "TransitionProvider.jsx",
         "path": "block-reveal-page-transition/src/providers/TransitionProvider.jsx",
         "url": "/components/Page%20Transitions/12/extracted/block-reveal-page-transition/src/providers/TransitionProvider.jsx"
+      },
+      {
+        "name": "index.html",
+        "path": "block-reveal-page-transition/out/index.html",
+        "url": "/components/Page%20Transitions/12/extracted/block-reveal-page-transition/out/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Page%20Transitions/12/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Page%20Transitions/12/extracted/files/script.js"
       }
     ]
   },
@@ -9541,6 +9671,21 @@
         "name": "PageTransition.jsx",
         "path": "files/src/components/PageTransition.jsx",
         "url": "/components/Page%20Transitions/13/extracted/files/src/components/PageTransition.jsx"
+      },
+      {
+        "name": "index.html",
+        "path": "files/out/index.html",
+        "url": "/components/Page%20Transitions/13/extracted/files/out/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Page%20Transitions/13/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Page%20Transitions/13/extracted/files/script.js"
       }
     ]
   },
@@ -9652,6 +9797,21 @@
         "name": "TransitionWrapper.jsx",
         "path": "svg-page-transition-master/src/components/pagetransition/TransitionWrapper.jsx",
         "url": "/components/Page%20Transitions/14/extracted/svg-page-transition-master/src/components/pagetransition/TransitionWrapper.jsx"
+      },
+      {
+        "name": "index.html",
+        "path": "svg-page-transition-master/out/index.html",
+        "url": "/components/Page%20Transitions/14/extracted/svg-page-transition-master/out/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Page%20Transitions/14/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Page%20Transitions/14/extracted/files/script.js"
       }
     ]
   },
@@ -9768,6 +9928,21 @@
         "name": "Nav.jsx",
         "path": "pagetransition-waabi-main/src/components/Nav.jsx",
         "url": "/components/Page%20Transitions/15/extracted/pagetransition-waabi-main/src/components/Nav.jsx"
+      },
+      {
+        "name": "index.html",
+        "path": "pagetransition-waabi-main/out/index.html",
+        "url": "/components/Page%20Transitions/15/extracted/pagetransition-waabi-main/out/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Page%20Transitions/15/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Page%20Transitions/15/extracted/files/script.js"
       }
     ]
   },
@@ -9823,8 +9998,8 @@
       },
       {
         "name": "index.html",
-        "path": "codegrid-detroit-paris-infinite-slider/index.html",
-        "url": "/components/Page%20Transitions/17/extracted/codegrid-detroit-paris-infinite-slider/index.html"
+        "path": "codegrid-detroit-paris-infinite-slider/dist/index.html",
+        "url": "/components/Page%20Transitions/17/extracted/codegrid-detroit-paris-infinite-slider/dist/index.html"
       },
       {
         "name": "package.json",
@@ -9890,6 +10065,11 @@
         "name": "styles.css",
         "path": "codegrid-detroit-paris-infinite-slider/styles.css",
         "url": "/components/Page%20Transitions/17/extracted/codegrid-detroit-paris-infinite-slider/styles.css"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Page%20Transitions/17/extracted/files/style.css"
       }
     ]
   },
@@ -10092,8 +10272,8 @@
       },
       {
         "name": "index.html",
-        "path": "three-skull-main/index.html",
-        "url": "/components/Mouse%20Effect/4/extracted/three-skull-main/index.html"
+        "path": "three-skull-main/dist/index.html",
+        "url": "/components/Mouse%20Effect/4/extracted/three-skull-main/dist/index.html"
       },
       {
         "name": "package-lock.json",
@@ -10374,8 +10554,8 @@
       },
       {
         "name": "index.html",
-        "path": "cursor-trail-main/index.html",
-        "url": "/components/Mouse%20Effect/11/extracted/cursor-trail-main/index.html"
+        "path": "cursor-trail-main/dist/index.html",
+        "url": "/components/Mouse%20Effect/11/extracted/cursor-trail-main/dist/index.html"
       },
       {
         "name": "package.json",
@@ -10817,6 +10997,16 @@
         "name": "math.js",
         "path": "The-Spirit-master/src/utils/math.js",
         "url": "/components/Mouse%20Effect/12/extracted/The-Spirit-master/src/utils/math.js"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Mouse%20Effect/12/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Mouse%20Effect/12/extracted/files/script.js"
       }
     ]
   },
@@ -11051,7 +11241,7 @@
     "category": "Mouse Effect",
     "title": "Mouse Effect #19",
     "videoUrl": "/components/Mouse%20Effect/19/preview.mp4",
-    "imageUrl": "/components/Mouse%20Effect/19/preview.jpg",
+    "imageUrl": "/components/Mouse Effect/19/preview.webp",
     "gifUrl": "/components/Mouse%20Effect/19/preview.gif",
     "zipUrl": "/components/Mouse%20Effect/19/code.zip",
     "files": [
@@ -11153,8 +11343,8 @@
       },
       {
         "name": "index.html",
-        "path": "WebGPU-clair-obscur-gommage-codrops-master/index.html",
-        "url": "/components/Webgl%20_%20ThreeJS%20Effects/1/extracted/WebGPU-clair-obscur-gommage-codrops-master/index.html"
+        "path": "files/index.html",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/1/extracted/files/index.html"
       },
       {
         "name": "package.json",
@@ -11230,6 +11420,16 @@
         "name": "vite.config.js",
         "path": "WebGPU-clair-obscur-gommage-codrops-master/vite.config.js",
         "url": "/components/Webgl%20_%20ThreeJS%20Effects/1/extracted/WebGPU-clair-obscur-gommage-codrops-master/vite.config.js"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/1/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/1/extracted/files/script.js"
       }
     ]
   },
@@ -11341,6 +11541,21 @@
         "name": "yarn.lock",
         "path": "webgl-mouseover-effects-master/yarn.lock",
         "url": "/components/Webgl%20_%20ThreeJS%20Effects/2/extracted/webgl-mouseover-effects-master/yarn.lock"
+      },
+      {
+        "name": "index.html",
+        "path": "files/index.html",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/2/extracted/files/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/2/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/2/extracted/files/script.js"
       }
     ]
   },
@@ -11380,8 +11595,8 @@
       },
       {
         "name": "index.html",
-        "path": "gooey-hover-codrops-master/index.html",
-        "url": "/components/Webgl%20_%20ThreeJS%20Effects/3/extracted/gooey-hover-codrops-master/index.html"
+        "path": "files/index.html",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/3/extracted/files/index.html"
       },
       {
         "name": "package.json",
@@ -11707,6 +11922,16 @@
         "name": "webpack.config.js",
         "path": "gooey-hover-codrops-master/webpack.config.js",
         "url": "/components/Webgl%20_%20ThreeJS%20Effects/3/extracted/gooey-hover-codrops-master/webpack.config.js"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/3/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/3/extracted/files/script.js"
       }
     ]
   },
@@ -11818,6 +12043,21 @@
         "name": "package.json",
         "path": "StickyImageEffect-master/package.json",
         "url": "/components/Webgl%20_%20ThreeJS%20Effects/4/extracted/StickyImageEffect-master/package.json"
+      },
+      {
+        "name": "index.html",
+        "path": "files/index.html",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/4/extracted/files/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/4/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/4/extracted/files/script.js"
       }
     ]
   },
@@ -11837,8 +12077,8 @@
       },
       {
         "name": "index.html",
-        "path": "tutorial-grid-main/final/index.html",
-        "url": "/components/Webgl%20_%20ThreeJS%20Effects/5/extracted/tutorial-grid-main/final/index.html"
+        "path": "tutorial-grid-main/final/dist/index.html",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/5/extracted/tutorial-grid-main/final/dist/index.html"
       },
       {
         "name": "javascript.svg",
@@ -12133,8 +12373,8 @@
       },
       {
         "name": "index.html",
-        "path": "r3f-image-reveal-effect-main/index.html",
-        "url": "/components/Webgl%20_%20ThreeJS%20Effects/6/extracted/r3f-image-reveal-effect-main/index.html"
+        "path": "files/index.html",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/6/extracted/files/index.html"
       },
       {
         "name": "package-lock.json",
@@ -12220,6 +12460,16 @@
         "name": "vite.config.js",
         "path": "r3f-image-reveal-effect-main/vite.config.js",
         "url": "/components/Webgl%20_%20ThreeJS%20Effects/6/extracted/r3f-image-reveal-effect-main/vite.config.js"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/6/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/6/extracted/files/script.js"
       }
     ]
   },
@@ -12305,8 +12555,8 @@
       },
       {
         "name": "index.html",
-        "path": "DistortedPixels-master/index.html",
-        "url": "/components/Webgl%20_%20ThreeJS%20Effects/8/extracted/DistortedPixels-master/index.html"
+        "path": "files/index.html",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/8/extracted/files/index.html"
       },
       {
         "name": "index2.html",
@@ -12347,6 +12597,16 @@
         "name": "package.json",
         "path": "DistortedPixels-master/package.json",
         "url": "/components/Webgl%20_%20ThreeJS%20Effects/8/extracted/DistortedPixels-master/package.json"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/8/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/8/extracted/files/script.js"
       }
     ]
   },
@@ -12391,8 +12651,8 @@
       },
       {
         "name": "index.html",
-        "path": "interactive-particles-master/src/index.html",
-        "url": "/components/Webgl%20_%20ThreeJS%20Effects/9/extracted/interactive-particles-master/src/index.html"
+        "path": "files/index.html",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/9/extracted/files/index.html"
       },
       {
         "name": "App.js",
@@ -12493,6 +12753,16 @@
         "name": "sample-05.png",
         "path": "interactive-particles-master/static/images/sample-05.png",
         "url": "/components/Webgl%20_%20ThreeJS%20Effects/9/extracted/interactive-particles-master/static/images/sample-05.png"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/9/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/9/extracted/files/script.js"
       }
     ]
   },
@@ -12537,8 +12807,8 @@
       },
       {
         "name": "index.html",
-        "path": "sdf-lensblur-master/index.html",
-        "url": "/components/Webgl%20_%20ThreeJS%20Effects/10/extracted/sdf-lensblur-master/index.html"
+        "path": "sdf-lensblur-master/dist/index.html",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/10/extracted/sdf-lensblur-master/dist/index.html"
       },
       {
         "name": "main.js",
@@ -12759,8 +13029,8 @@
       },
       {
         "name": "index.html",
-        "path": "the-substance-master/public/index.html",
-        "url": "/components/Webgl%20_%20ThreeJS%20Effects/12/extracted/the-substance-master/public/index.html"
+        "path": "files/index.html",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/12/extracted/files/index.html"
       },
       {
         "name": "MOONGET_Heavy.blob",
@@ -12861,6 +13131,16 @@
         "name": "yarn.lock",
         "path": "the-substance-master/yarn.lock",
         "url": "/components/Webgl%20_%20ThreeJS%20Effects/12/extracted/the-substance-master/yarn.lock"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/12/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/12/extracted/files/script.js"
       }
     ]
   },
@@ -12885,8 +13165,8 @@
       },
       {
         "name": "index.html",
-        "path": "morphing-2d-demo-main/index.html",
-        "url": "/components/Webgl%20_%20ThreeJS%20Effects/13/extracted/morphing-2d-demo-main/index.html"
+        "path": "morphing-2d-demo-main/dist/index.html",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/13/extracted/morphing-2d-demo-main/dist/index.html"
       },
       {
         "name": "package-lock.json",
@@ -13740,8 +14020,8 @@
       },
       {
         "name": "index.html",
-        "path": "image-distortion-main/index.html",
-        "url": "/components/Webgl%20_%20ThreeJS%20Effects/18/extracted/image-distortion-main/index.html"
+        "path": "image-distortion-main/dist/index.html",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/18/extracted/image-distortion-main/dist/index.html"
       },
       {
         "name": "package-lock.json",
@@ -13816,8 +14096,8 @@
       },
       {
         "name": "index.html",
-        "path": "code/index.html",
-        "url": "/components/Webgl%20_%20ThreeJS%20Effects/19/extracted/code/index.html"
+        "path": "code/dist/index.html",
+        "url": "/components/Webgl%20_%20ThreeJS%20Effects/19/extracted/code/dist/index.html"
       },
       {
         "name": "package-lock.json",
@@ -14463,7 +14743,7 @@
     "category": "Navigation Menus",
     "title": "Navigation Menus #18",
     "videoUrl": null,
-    "imageUrl": "/components/Navigation%20Menus/18/preview.jpg",
+    "imageUrl": null,
     "gifUrl": null,
     "zipUrl": "/components/Navigation%20Menus/18/code.zip",
     "files": [
@@ -14674,8 +14954,8 @@
       },
       {
         "name": "index.html",
-        "path": "three-html-to-canvas-main/index.html",
-        "url": "/components/3D%20Animation/2/extracted/three-html-to-canvas-main/index.html"
+        "path": "three-html-to-canvas-main/dist/index.html",
+        "url": "/components/3D%20Animation/2/extracted/three-html-to-canvas-main/dist/index.html"
       },
       {
         "name": "package-lock.json",
@@ -14770,8 +15050,8 @@
       },
       {
         "name": "index.html",
-        "path": "cinematic-scroll-animations-main/index.html",
-        "url": "/components/3D%20Animation/3/extracted/cinematic-scroll-animations-main/index.html"
+        "path": "files/index.html",
+        "url": "/components/3D%20Animation/3/extracted/files/index.html"
       },
       {
         "name": "package.json",
@@ -14997,6 +15277,16 @@
         "name": "vite.config.ts",
         "path": "cinematic-scroll-animations-main/vite.config.ts",
         "url": "/components/3D%20Animation/3/extracted/cinematic-scroll-animations-main/vite.config.ts"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/3D%20Animation/3/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/3D%20Animation/3/extracted/files/script.js"
       }
     ]
   },
@@ -15041,8 +15331,8 @@
       },
       {
         "name": "index.html",
-        "path": "delphi-main/index.html",
-        "url": "/components/3D%20Animation/4/extracted/delphi-main/index.html"
+        "path": "delphi-main/dist/index.html",
+        "url": "/components/3D%20Animation/4/extracted/delphi-main/dist/index.html"
       },
       {
         "name": "index.tsx",
@@ -15969,6 +16259,21 @@
         "name": "globals.css",
         "path": "shoe-finder-main/src/styles/globals.css",
         "url": "/components/3D%20Animation/5/extracted/shoe-finder-main/src/styles/globals.css"
+      },
+      {
+        "name": "index.html",
+        "path": "files/index.html",
+        "url": "/components/3D%20Animation/5/extracted/files/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/3D%20Animation/5/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/3D%20Animation/5/extracted/files/script.js"
       }
     ]
   },
@@ -16023,8 +16328,8 @@
       },
       {
         "name": "index.html",
-        "path": "video-projection-main/index.html",
-        "url": "/components/3D%20Animation/6/extracted/video-projection-main/index.html"
+        "path": "video-projection-main/dist/index.html",
+        "url": "/components/3D%20Animation/6/extracted/video-projection-main/dist/index.html"
       },
       {
         "name": "app.js",
@@ -16597,6 +16902,21 @@
         "name": "tailwind.config.js",
         "path": "creative-404-main/tailwind.config.js",
         "url": "/components/3D%20Animation/8/extracted/creative-404-main/tailwind.config.js"
+      },
+      {
+        "name": "index.html",
+        "path": "files/index.html",
+        "url": "/components/3D%20Animation/8/extracted/files/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/3D%20Animation/8/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/3D%20Animation/8/extracted/files/script.js"
       }
     ]
   },
@@ -16646,8 +16966,8 @@
       },
       {
         "name": "index.html",
-        "path": "dithering-shader-main/public/index.html",
-        "url": "/components/3D%20Animation/9/extracted/dithering-shader-main/public/index.html"
+        "path": "files/index.html",
+        "url": "/components/3D%20Animation/9/extracted/files/index.html"
       },
       {
         "name": "jousting_helmet-transformed.glb",
@@ -16718,6 +17038,16 @@
         "name": "yarn.lock",
         "path": "dithering-shader-main/yarn.lock",
         "url": "/components/3D%20Animation/9/extracted/dithering-shader-main/yarn.lock"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/3D%20Animation/9/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/3D%20Animation/9/extracted/files/script.js"
       }
     ]
   },
@@ -16823,8 +17153,8 @@
       },
       {
         "name": "index.html",
-        "path": "threepipe-device-mockup-codrops-master/index.html",
-        "url": "/components/3D%20Animation/11/extracted/threepipe-device-mockup-codrops-master/index.html"
+        "path": "files/index.html",
+        "url": "/components/3D%20Animation/11/extracted/files/index.html"
       },
       {
         "name": "package-lock.json",
@@ -16865,6 +17195,11 @@
         "name": "tsconfig.json",
         "path": "threepipe-device-mockup-codrops-master/tsconfig.json",
         "url": "/components/3D%20Animation/11/extracted/threepipe-device-mockup-codrops-master/tsconfig.json"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/3D%20Animation/11/extracted/files/script.js"
       }
     ]
   },
@@ -17091,6 +17426,11 @@
         "name": "tsconfig.json",
         "path": "helmet-main/tsconfig.json",
         "url": "/components/3D%20Animation/12/extracted/helmet-main/tsconfig.json"
+      },
+      {
+        "name": "index.html",
+        "path": "helmet-main/out/index.html",
+        "url": "/components/3D%20Animation/12/extracted/helmet-main/out/index.html"
       }
     ]
   },
@@ -17232,6 +17572,21 @@
         "name": "index.jsx",
         "path": "3d-earth-scroll-main/src/components/smoothScroll/index.jsx",
         "url": "/components/3D%20Animation/13/extracted/3d-earth-scroll-main/src/components/smoothScroll/index.jsx"
+      },
+      {
+        "name": "index.html",
+        "path": "files/index.html",
+        "url": "/components/3D%20Animation/13/extracted/files/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/3D%20Animation/13/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/3D%20Animation/13/extracted/files/script.js"
       }
     ]
   },
@@ -17297,8 +17652,8 @@
       },
       {
         "name": "index.html",
-        "path": "f/public/index.html",
-        "url": "/components/3D%20Animation/15/extracted/f/public/index.html"
+        "path": "files/index.html",
+        "url": "/components/3D%20Animation/15/extracted/files/index.html"
       },
       {
         "name": "screenshot.jpg",
@@ -17359,6 +17714,16 @@
         "name": "yarn.lock",
         "path": "f/yarn.lock",
         "url": "/components/3D%20Animation/15/extracted/f/yarn.lock"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/3D%20Animation/15/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/3D%20Animation/15/extracted/files/script.js"
       }
     ]
   },
@@ -17734,7 +18099,7 @@
     "category": "Sliders",
     "title": "Sliders #1",
     "videoUrl": null,
-    "imageUrl": "/components/Sliders/1/preview.jpg",
+    "imageUrl": null,
     "gifUrl": null,
     "zipUrl": "/components/Sliders/1/code.zip",
     "files": [
@@ -19126,6 +19491,16 @@
         "name": "index.js",
         "path": "webgl-carousel-main/src/utils/index.js",
         "url": "/components/Sliders/11/extracted/webgl-carousel-main/src/utils/index.js"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Sliders/11/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Sliders/11/extracted/files/script.js"
       }
     ]
   },
@@ -19236,8 +19611,8 @@
       },
       {
         "name": "index.html",
-        "path": "ShapesSlideshow-main/index.html",
-        "url": "/components/Sliders/13/extracted/ShapesSlideshow-main/index.html"
+        "path": "ShapesSlideshow-main/dist/index.html",
+        "url": "/components/Sliders/13/extracted/ShapesSlideshow-main/dist/index.html"
       },
       {
         "name": "package.json",
@@ -19368,6 +19743,16 @@
         "name": "utils.js",
         "path": "ShapesSlideshow-main/src/js/utils.js",
         "url": "/components/Sliders/13/extracted/ShapesSlideshow-main/src/js/utils.js"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Sliders/13/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Sliders/13/extracted/files/script.js"
       }
     ]
   },
@@ -19382,8 +19767,8 @@
     "files": [
       {
         "name": "index.html",
-        "path": "ripple-displacement-slider/index.html",
-        "url": "/components/Sliders/14/extracted/ripple-displacement-slider/index.html"
+        "path": "ripple-displacement-slider/dist/index.html",
+        "url": "/components/Sliders/14/extracted/ripple-displacement-slider/dist/index.html"
       },
       {
         "name": "package.json",
@@ -19429,6 +19814,11 @@
         "name": "styles.css",
         "path": "ripple-displacement-slider/styles.css",
         "url": "/components/Sliders/14/extracted/ripple-displacement-slider/styles.css"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Sliders/14/extracted/files/style.css"
       }
     ]
   },
@@ -21152,8 +21542,8 @@
     "files": [
       {
         "name": "index.html",
-        "path": "artefakt-interactive-ascii-logo/index.html",
-        "url": "/components/Hover%20Effects/13/extracted/artefakt-interactive-ascii-logo/index.html"
+        "path": "artefakt-interactive-ascii-logo/dist/index.html",
+        "url": "/components/Hover%20Effects/13/extracted/artefakt-interactive-ascii-logo/dist/index.html"
       },
       {
         "name": "package.json",
@@ -21174,6 +21564,11 @@
         "name": "styles.css",
         "path": "artefakt-interactive-ascii-logo/styles.css",
         "url": "/components/Hover%20Effects/13/extracted/artefakt-interactive-ascii-logo/styles.css"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Hover%20Effects/13/extracted/files/style.css"
       }
     ]
   },
@@ -21193,8 +21588,8 @@
       },
       {
         "name": "index.html",
-        "path": "cappen-fluid-simulation/index.html",
-        "url": "/components/Hover%20Effects/14/extracted/cappen-fluid-simulation/index.html"
+        "path": "cappen-fluid-simulation/dist/index.html",
+        "url": "/components/Hover%20Effects/14/extracted/cappen-fluid-simulation/dist/index.html"
       },
       {
         "name": "FluidSimulation.js",
@@ -21215,6 +21610,11 @@
         "name": "package.json",
         "path": "cappen-fluid-simulation/package.json",
         "url": "/components/Hover%20Effects/14/extracted/cappen-fluid-simulation/package.json"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Hover%20Effects/14/extracted/files/style.css"
       }
     ]
   },
@@ -21229,8 +21629,8 @@
     "files": [
       {
         "name": "index.html",
-        "path": "codegrid-griflan-hover-effect/index.html",
-        "url": "/components/Hover%20Effects/15/extracted/codegrid-griflan-hover-effect/index.html"
+        "path": "codegrid-griflan-hover-effect/dist/index.html",
+        "url": "/components/Hover%20Effects/15/extracted/codegrid-griflan-hover-effect/dist/index.html"
       },
       {
         "name": "package.json",
@@ -21291,6 +21691,11 @@
         "name": "styles.css",
         "path": "codegrid-griflan-hover-effect/styles.css",
         "url": "/components/Hover%20Effects/15/extracted/codegrid-griflan-hover-effect/styles.css"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Hover%20Effects/15/extracted/files/style.css"
       }
     ]
   },
@@ -23411,8 +23816,8 @@
     "files": [
       {
         "name": "index.html",
-        "path": "code/index.html",
-        "url": "/components/Hero%20Animations/24/extracted/code/index.html"
+        "path": "code/dist/index.html",
+        "url": "/components/Hero%20Animations/24/extracted/code/dist/index.html"
       },
       {
         "name": "package-lock.json",
@@ -23637,8 +24042,8 @@
       },
       {
         "name": "index.html",
-        "path": "Loader-main/index.html",
-        "url": "/components/Hero%20Animations/25/extracted/Loader-main/index.html"
+        "path": "Loader-main/dist/index.html",
+        "url": "/components/Hero%20Animations/25/extracted/Loader-main/dist/index.html"
       },
       {
         "name": "package-lock.json",
@@ -23826,6 +24231,11 @@
         "name": "style.css",
         "path": "rgb-split-distortion-scroll-effect-main/style.css",
         "url": "/components/Scroll%20Animation/1/extracted/rgb-split-distortion-scroll-effect-main/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Scroll%20Animation/1/extracted/files/script.js"
       }
     ]
   },
@@ -24021,8 +24431,8 @@
       },
       {
         "name": "index.html",
-        "path": "text-demo-main/index.html",
-        "url": "/components/Scroll%20Animation/3/extracted/text-demo-main/index.html"
+        "path": "text-demo-main/dist/index.html",
+        "url": "/components/Scroll%20Animation/3/extracted/text-demo-main/dist/index.html"
       },
       {
         "name": "package-lock.json",
@@ -24168,6 +24578,16 @@
         "name": "vite.config.ts",
         "path": "text-demo-main/vite.config.ts",
         "url": "/components/Scroll%20Animation/3/extracted/text-demo-main/vite.config.ts"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Scroll%20Animation/3/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Scroll%20Animation/3/extracted/files/script.js"
       }
     ]
   },
@@ -24968,6 +25388,11 @@
         "name": "page.module.css",
         "path": "text-clip-mask-on-scroll-master/src/app/page.module.css",
         "url": "/components/Scroll%20Animation/8/extracted/text-clip-mask-on-scroll-master/src/app/page.module.css"
+      },
+      {
+        "name": "index.html",
+        "path": "text-clip-mask-on-scroll-master/out/index.html",
+        "url": "/components/Scroll%20Animation/8/extracted/text-clip-mask-on-scroll-master/out/index.html"
       }
     ]
   },
@@ -25108,8 +25533,8 @@
       },
       {
         "name": "index.html",
-        "path": "telescope-zoom-main/index.html",
-        "url": "/components/Scroll%20Animation/10/extracted/telescope-zoom-main/index.html"
+        "path": "telescope-zoom-main/dist/index.html",
+        "url": "/components/Scroll%20Animation/10/extracted/telescope-zoom-main/dist/index.html"
       },
       {
         "name": "package-lock.json",
@@ -25381,6 +25806,21 @@
         "name": "tsconfig.json",
         "path": "gsap-threejs-master/tsconfig.json",
         "url": "/components/Scroll%20Animation/11/extracted/gsap-threejs-master/tsconfig.json"
+      },
+      {
+        "name": "index.html",
+        "path": "gsap-threejs-master/dist/index.html",
+        "url": "/components/Scroll%20Animation/11/extracted/gsap-threejs-master/dist/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Scroll%20Animation/11/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Scroll%20Animation/11/extracted/files/script.js"
       }
     ]
   },
@@ -25405,8 +25845,8 @@
       },
       {
         "name": "index.html",
-        "path": "webgl-progressive-blur-main/src/index.html",
-        "url": "/components/Scroll%20Animation/12/extracted/webgl-progressive-blur-main/src/index.html"
+        "path": "webgl-progressive-blur-main/dist/index.html",
+        "url": "/components/Scroll%20Animation/12/extracted/webgl-progressive-blur-main/dist/index.html"
       },
       {
         "name": "GL.js",
@@ -25799,8 +26239,8 @@
       },
       {
         "name": "index.html",
-        "path": "sticky-grid-scroll-main/src/index.html",
-        "url": "/components/Scroll%20Animation/16/extracted/sticky-grid-scroll-main/src/index.html"
+        "path": "sticky-grid-scroll-main/dist/index.html",
+        "url": "/components/Scroll%20Animation/16/extracted/sticky-grid-scroll-main/dist/index.html"
       },
       {
         "name": "index.js",
@@ -27570,8 +28010,8 @@
       },
       {
         "name": "index.html",
-        "path": "AnimateSVGTextPath-master/index.html",
-        "url": "/components/Scroll%20Animation/27/extracted/AnimateSVGTextPath-master/index.html"
+        "path": "AnimateSVGTextPath-master/dist/index.html",
+        "url": "/components/Scroll%20Animation/27/extracted/AnimateSVGTextPath-master/dist/index.html"
       },
       {
         "name": "index.js",
@@ -27597,6 +28037,16 @@
         "name": "package.json",
         "path": "AnimateSVGTextPath-master/package.json",
         "url": "/components/Scroll%20Animation/27/extracted/AnimateSVGTextPath-master/package.json"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Scroll%20Animation/27/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Scroll%20Animation/27/extracted/files/script.js"
       }
     ]
   },
@@ -27874,8 +28324,8 @@
       },
       {
         "name": "index.html",
-        "path": "tutorial-text-animation-main/index.html",
-        "url": "/components/Scroll%20Animation/31/extracted/tutorial-text-animation-main/index.html"
+        "path": "tutorial-text-animation-main/dist/index.html",
+        "url": "/components/Scroll%20Animation/31/extracted/tutorial-text-animation-main/dist/index.html"
       },
       {
         "name": "jsconfig.json",
@@ -28466,6 +28916,21 @@
         "name": "Projects.jsx",
         "path": "ingamana-scroll-animation-nextjs/src/components/Projects/Projects.jsx",
         "url": "/components/Scroll%20Animation/36/extracted/ingamana-scroll-animation-nextjs/src/components/Projects/Projects.jsx"
+      },
+      {
+        "name": "index.html",
+        "path": "ingamana-scroll-animation-nextjs/out/index.html",
+        "url": "/components/Scroll%20Animation/36/extracted/ingamana-scroll-animation-nextjs/out/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Scroll%20Animation/36/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Scroll%20Animation/36/extracted/files/script.js"
       }
     ]
   },
@@ -28480,8 +28945,8 @@
     "files": [
       {
         "name": "index.html",
-        "path": "ascii-image-reveal-effect/index.html",
-        "url": "/components/Scroll%20Animation/37/extracted/ascii-image-reveal-effect/index.html"
+        "path": "ascii-image-reveal-effect/dist/index.html",
+        "url": "/components/Scroll%20Animation/37/extracted/ascii-image-reveal-effect/dist/index.html"
       },
       {
         "name": "package.json",
@@ -28572,6 +29037,11 @@
         "name": "styles.css",
         "path": "ascii-image-reveal-effect/styles.css",
         "url": "/components/Scroll%20Animation/37/extracted/ascii-image-reveal-effect/styles.css"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Scroll%20Animation/37/extracted/files/style.css"
       }
     ]
   },
@@ -28586,8 +29056,8 @@
     "files": [
       {
         "name": "index.html",
-        "path": "maximatherapy-sticky-cards/index.html",
-        "url": "/components/Scroll%20Animation/38/extracted/maximatherapy-sticky-cards/index.html"
+        "path": "maximatherapy-sticky-cards/dist/index.html",
+        "url": "/components/Scroll%20Animation/38/extracted/maximatherapy-sticky-cards/dist/index.html"
       },
       {
         "name": "package.json",
@@ -28603,6 +29073,11 @@
         "name": "styles.css",
         "path": "maximatherapy-sticky-cards/styles.css",
         "url": "/components/Scroll%20Animation/38/extracted/maximatherapy-sticky-cards/styles.css"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Scroll%20Animation/38/extracted/files/style.css"
       }
     ]
   },
@@ -30064,6 +30539,21 @@
         "name": "ExplosionContainer.js",
         "path": "code/src/components/ExplosionContainer.js",
         "url": "/components/Scroll%20Animation/54/extracted/code/src/components/ExplosionContainer.js"
+      },
+      {
+        "name": "index.html",
+        "path": "code/out/index.html",
+        "url": "/components/Scroll%20Animation/54/extracted/code/out/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Scroll%20Animation/54/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Scroll%20Animation/54/extracted/files/script.js"
       }
     ]
   },
@@ -30185,6 +30675,21 @@
         "name": "Structure.jsx",
         "path": "fall-master/src/components/Structure.jsx",
         "url": "/components/Scroll%20Animation/56/extracted/fall-master/src/components/Structure.jsx"
+      },
+      {
+        "name": "index.html",
+        "path": "fall-master/out/index.html",
+        "url": "/components/Scroll%20Animation/56/extracted/fall-master/out/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Scroll%20Animation/56/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Scroll%20Animation/56/extracted/files/script.js"
       }
     ]
   },
@@ -30311,6 +30816,21 @@
         "name": "Works.jsx",
         "path": "pixel-image-master/src/components/Works.jsx",
         "url": "/components/Scroll%20Animation/57/extracted/pixel-image-master/src/components/Works.jsx"
+      },
+      {
+        "name": "index.html",
+        "path": "pixel-image-master/out/index.html",
+        "url": "/components/Scroll%20Animation/57/extracted/pixel-image-master/out/index.html"
+      },
+      {
+        "name": "style.css",
+        "path": "files/style.css",
+        "url": "/components/Scroll%20Animation/57/extracted/files/style.css"
+      },
+      {
+        "name": "script.js",
+        "path": "files/script.js",
+        "url": "/components/Scroll%20Animation/57/extracted/files/script.js"
       }
     ]
   }

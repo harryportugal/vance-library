@@ -27,3 +27,6 @@ dist-ssr
 /300 Awwwards components/
 /public/components/**/extracted/
 check_sizes.cjs
+/scratch/
+/temp_blur_src/
+/code.zip
