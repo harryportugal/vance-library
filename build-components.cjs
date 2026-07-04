@@ -470,7 +470,22 @@ registry.forEach((comp) => {
   if (!fs.existsSync(compFolder)) return;
 
   const extractedDir = path.join(compFolder, 'extracted');
-  if (!fs.existsSync(extractedDir)) return;
+  const zipPath = path.join(compFolder, 'code.zip');
+
+  if (!fs.existsSync(extractedDir)) {
+    if (fs.existsSync(zipPath)) {
+      fs.mkdirSync(extractedDir, { recursive: true });
+      try {
+        execSync(`tar -xf "${zipPath}" -C "${extractedDir}"`, { stdio: 'ignore' });
+        console.log(`  [Extracted] Component ${categoryName} #${compId}`);
+      } catch (err) {
+        console.error(`  [Extract Error] Failed to unpack component ${categoryName} #${compId}:`, err.message);
+        return;
+      }
+    } else {
+      return;
+    }
+  }
 
   // 1. Find subfolder containing package.json (if any)
   let packageJsonDir = null;
