@@ -237,15 +237,15 @@ buttons.forEach(btn => {
 
 // Injects local libraries, hidden scrollbars, and broken image fallbacks
 const CDN_INJECTS = `
-  <!-- Automatic High-Performance Library CDN Inject -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/CustomEase.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Flip.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/Observer.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+  <!-- Automatic High-Performance Local Library Inject -->
+  <script src="/libs/three.min.js"></script>
+  <script src="/libs/gsap.min.js"></script>
+  <script src="/libs/ScrollTrigger.min.js"></script>
+  <script src="/libs/ScrollToPlugin.min.js"></script>
+  <script src="/libs/CustomEase.min.js"></script>
+  <script src="/libs/Flip.min.js"></script>
+  <script src="/libs/Observer.min.js"></script>
+  <script src="/libs/lenis.min.js"></script>
   <style>
     /* Hide scrollbars globally inside iframe */
     ::-webkit-scrollbar {
@@ -410,14 +410,10 @@ const CDN_INJECTS = `
 `;
 
 function injectCDNs(htmlContent) {
-  if (htmlContent.includes('PLACEHOLDER_IMAGES')) {
-    return htmlContent;
-  }
+  // Strip any existing scripts loading three, gsap, lenis (both CDNs and local /vendor or /libs paths)
   let patched = htmlContent
-    .replace(/<script[^>]*src=["'](?:..\/)*node_modules\/gsap\/[^"']*["'][^>]*><\/script>/gi, '')
-    .replace(/<script[^>]*src=["'](?:..\/)*node_modules\/three\/[^"']*["'][^>]*><\/script>/gi, '')
-    .replace(/<script[^>]*src=["']gsap\.min\.js["'][^>]*><\/script>/gi, '')
-    .replace(/<script[^>]*src=["']ScrollTrigger\.min\.js["'][^>]*><\/script>/gi, '');
+    .replace(/<script[^>]*src=["'][^"']*(?:three|gsap|lenis|ScrollTrigger|ScrollToPlugin|CustomEase|Flip|Observer)[^"']*["'][^>]*><\/script>/gi, '')
+    .replace(/<script[^>]*src=["'](?:..\/)*node_modules\/[^"']*["'][^>]*><\/script>/gi, '');
 
   if (patched.includes('<head>')) {
     return patched.replace('<head>', '<head>' + CDN_INJECTS);
@@ -818,7 +814,7 @@ export default defineConfig({
     }
     indexHtmlPath = mockIndexFile;
     mockCount++;
-  } else {
+  } else if (indexHtmlPath) {
     // Register successfully compiled path
     const relativeHtmlPath = path.relative(extractedDir, indexHtmlPath).replace(/\\/g, '/');
     const categoryNameUrl = encodeURIComponent(categoryName);
