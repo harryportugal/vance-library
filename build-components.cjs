@@ -239,6 +239,7 @@ buttons.forEach(btn => {
 const CDN_INJECTS = `
   <!-- Automatic High-Performance Local Library Inject -->
   <script src="/libs/three.min.js"></script>
+  <script src="/libs/GLTFLoader.js"></script>
   <script src="/libs/gsap.min.js"></script>
   <script src="/libs/ScrollTrigger.min.js"></script>
   <script src="/libs/ScrollToPlugin.min.js"></script>
@@ -412,7 +413,7 @@ const CDN_INJECTS = `
 function injectCDNs(htmlContent) {
   // Strip any existing scripts loading three, gsap, lenis (both CDNs and local /vendor or /libs paths)
   let patched = htmlContent
-    .replace(/<script[^>]*src=["'][^"']*(?:three|gsap|lenis|ScrollTrigger|ScrollToPlugin|CustomEase|Flip|Observer)[^"']*["'][^>]*><\/script>/gi, '')
+    .replace(/<script[^>]*src=["'][^"']*(?:three|gsap|lenis|ScrollTrigger|ScrollToPlugin|CustomEase|Flip|Observer|GLTFLoader)[^"']*["'][^>]*><\/script>/gi, '')
     .replace(/<script[^>]*src=["'](?:..\/)*node_modules\/[^"']*["'][^>]*><\/script>/gi, '');
 
   if (patched.includes('<head>')) {
@@ -834,10 +835,10 @@ export default defineConfig({
     let content = fs.readFileSync(indexHtmlPath, 'utf8');
     content = injectCDNs(content);
     
-    // Replace absolute links like src="/img" -> src="img" for built static projects
+    // Replace absolute links like src="/img" -> src="img" for built static projects, ignoring /libs/ and /vendor/
     if (builtSuccessfully && !packageJsonDir) {
       content = content
-        .replace(/(src|href)=["']\/([^/][^"']*)["']/g, '$1="./$2"')
+        .replace(/(src|href)=["']\/(?!(?:libs|vendor)\/)([^/][^"']*)["']/g, '$1="./$2"')
         .replace(/(src|href)=["']\/["']/g, '$1="./"');
     }
 
