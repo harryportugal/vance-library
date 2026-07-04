@@ -1064,13 +1064,6 @@ export default function App() {
               <div className="hero-chat-input">
                 <ClaudeChatInput />
               </div>
-              <p className="text-sm md:text-base text-zinc-550 max-w-xl mx-auto font-medium leading-relaxed text-center hero-subtitle">
-                {lang === 'pt' 
-                  ? 'Todos os componentes são fáceis de integrar e usar.' 
-                  : lang === 'es' 
-                  ? 'Todos los componentes son fáciles de integrar y usar.' 
-                  : 'All components are easy to integrate and use.'}
-              </p>
             </div>
 
             {/* 2. Horizontal Category Selector Menu */}
