@@ -377,6 +377,7 @@ const CDN_INJECTS = `
       }
     }
     window.SplitText = SplitTextPolyfill;
+    window.SplitType = SplitTextPolyfill;
 
     // ScrollSmoother Polyfill
     window.ScrollSmoother = {
