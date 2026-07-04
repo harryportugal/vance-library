@@ -476,14 +476,19 @@ registry.forEach((comp) => {
     if (fs.existsSync(zipPath)) {
       fs.mkdirSync(extractedDir, { recursive: true });
       try {
-        execSync(`tar -xf "${zipPath}" -C "${extractedDir}"`, { stdio: 'ignore' });
+        if (process.platform === 'win32') {
+          execSync(`tar -xf "${zipPath}" -C "${extractedDir}"`, { stdio: 'ignore' });
+        } else {
+          execSync(`unzip -q -o "${zipPath}" -d "${extractedDir}"`, { stdio: 'ignore' });
+        }
         console.log(`  [Extracted] Component ${categoryName} #${compId}`);
       } catch (err) {
         console.error(`  [Extract Error] Failed to unpack component ${categoryName} #${compId}:`, err.message);
-        return;
+        process.exit(1);
       }
     } else {
-      return;
+      console.error(`  [Missing Zip] Zip file not found at ${zipPath}`);
+      process.exit(1);
     }
   }
 
