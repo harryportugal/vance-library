@@ -1,0 +1,13 @@
+var R=require("../chunks/ssr/[turbopack]_runtime.js")("server/app/page.js")
+R.c("server/chunks/ssr/[root-of-the-server]__18svm8w._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_esm_build_templates_app-page_0kfj71_.js")
+R.c("server/chunks/ssr/[root-of-the-server]__13d_o6g._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__0100oqz._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__1o_r3ze._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_0wpq8j3._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_forbidden_0symwr9.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_unauthorized_0l_sp0x.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_global-error_0-o-goa.js")
+R.c("server/chunks/ssr/1j0m_r3f-rapier-ball-of-glass-main__next-internal_server_app_page_actions_1i749ii.js")
+R.m(84497)
+module.exports=R.m(84497).exports

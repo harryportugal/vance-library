@@ -1,0 +1,73 @@
+/* =====================================================
+   RESET
+   ===================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+   width: 100%;
+   height: 100%;
+   overflow: hidden;
+   background: #0a0a0a;
+   color: #f5f1e8;
+   font-family: 'Inter', system-ui, sans-serif;
+   -webkit-font-smoothing: antialiased;
+   cursor: none;          /* native cursor hidden — we draw our own */
+}
+
+/* =====================================================
+   TITLE — gigantic word behind the canvas
+   ===================================================== */
+.title {
+   position: fixed;
+   inset: 0;
+   z-index: 1;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   font-family: 'Inter', sans-serif;
+   font-weight: 900;
+   font-size: clamp(120px, 22vw, 360px);
+   line-height: 1;
+   letter-spacing: -0.05em;
+   color: #f5f1e8;
+   pointer-events: none;
+   user-select: none;
+}
+
+/* =====================================================
+   CANVAS — particles + cursor render here
+   ===================================================== */
+#js-canvas {
+   position: fixed;
+   inset: 0;
+   z-index: 2;
+   width: 100%;
+   height: 100%;
+   /* difference blend so dark particles cut through the
+      bright title and feel embedded — not on top of it */
+   mix-blend-mode: difference;
+}
+
+/* =====================================================
+   HINT pill
+   ===================================================== */
+.hint {
+   position: fixed;
+   bottom: 32px;
+   left: 50%;
+   transform: translateX(-50%);
+   z-index: 3;
+   padding: 10px 20px;
+   border: 1px solid rgba(245, 241, 232, 0.3);
+   border-radius: 999px;
+   font-family: 'Inter', sans-serif;
+   font-weight: 500;
+   font-size: 11px;
+   letter-spacing: 0.18em;
+   text-transform: uppercase;
+   color: #f5f1e8;
+   pointer-events: none;
+   transition: opacity 0.6s ease;
+}
+
+.hint.is-hidden { opacity: 0; }
