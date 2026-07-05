@@ -1,0 +1,239 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id            String   @id @default(uuid())
+  name          String   @map("nome")
+  email         String   @unique
+  emailVerified Boolean  @default(false) @map("email_verificado") // maps to database email_verificado
+  image         String?  @map("avatar") // maps to database avatar
+  role          String   @default("user") // "user" | "admin"
+  status        String   @default("ativo") // "ativo" | "bloqueado" | "pendente"
+  plan          String   @default("free") // "free" | "premium"
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  sessions      Session[]
+  accounts      Account[]
+  subscriptions Subscription[]
+  favorites     Favorite[]
+  accessLogs    AccessLog[]
+  transactions  Transaction[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  userId                String    @map("user_id")
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  password              String?
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  expiresAt             DateTime? @map("expires_at")
+  passwordExpiredAt     DateTime? @map("password_expired_at")
+  scope                 String?
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String    @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime  @map("expires_at")
+  createdAt  DateTime? @default(now()) @map("created_at")
+  updatedAt  DateTime? @updatedAt @map("updated_at")
+
+  @@map("verifications")
+}
+
+model Plan {
+  id            String         @id @default(uuid())
+  nome          String
+  slug          String         @unique
+  descricao     String?        @map("descrição")
+  preco         Float          @map("preço")
+  moeda         String         @default("BRL")
+  intervalo     String         // "mensal" | "anual"
+  ativo         Boolean        @default(true)
+  created_at    DateTime       @default(now())
+  subscriptions Subscription[]
+
+  @@index([created_at])
+  @@map("plans")
+}
+
+model Subscription {
+  id                      String    @id @default(uuid())
+  user_id                 String
+  user                    User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  plano_id                String
+  plano                   Plan      @relation(fields: [plano_id], references: [id])
+  gateway_customer_id     String?
+  gateway_subscription_id String?
+  status                  String    @default("pendente") // "ativa" | "cancelada" | "vencida" | "trial" | "pendente"
+  inicio                  DateTime  @map("início")
+  fim                     DateTime?
+  renovacao               DateTime? @map("renovação")
+  cancelada_em            DateTime?
+  created_at              DateTime  @default(now())
+  updated_at              DateTime  @updatedAt
+  transactions            Transaction[]
+
+  @@index([status])
+  @@index([user_id])
+  @@index([plano_id])
+  @@index([created_at])
+  @@map("subscriptions")
+}
+
+model Transaction {
+  id                 String        @id @default(uuid())
+  subscription_id    String?
+  subscription       Subscription? @relation(fields: [subscription_id], references: [id], onDelete: SetNull)
+  user_id            String
+  user               User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  amount             Float
+  status             String        // "pago" | "pendente" | "vencido" | "estornado"
+  payment_method     String        // "PIX" | "BOLETO" | "CREDIT_CARD"
+  gateway_payment_id String?       @unique
+  invoice_url        String?
+  created_at         DateTime      @default(now())
+
+  @@index([user_id])
+  @@index([subscription_id])
+  @@index([status])
+  @@map("transactions")
+}
+
+model BillingEvent {
+  id               String   @id @default(uuid())
+  gateway_event_id String   @unique
+  event_type       String
+  payload          String   // JSON string
+  processed        Boolean  @default(false)
+  created_at       DateTime @default(now())
+
+  @@map("billing_events")
+}
+
+model BillingLog {
+  id         String   @id @default(uuid())
+  message    String
+  level      String   // "info" | "warn" | "error"
+  details    String?
+  created_at DateTime @default(now())
+
+  @@map("billing_logs")
+}
+
+model Category {
+  id         String      @id @default(uuid())
+  nome       String
+  slug       String      @unique
+  descricao  String?     @map("descrição")
+  ordem      Int         @default(0)
+  created_at DateTime    @default(now())
+  components Component[]
+
+  @@map("categories")
+}
+
+model Component {
+  id                   String         @id @default(uuid())
+  titulo               String         @map("título")
+  slug                 String         @unique
+  descricao            String?        @map("descrição")
+  categoria_id         String
+  categoria            Category       @relation(fields: [categoria_id], references: [id])
+  premium              Boolean        @default(false)
+  preview_image        String?
+  preview_video        String?
+  codigo               String?        @map("código")
+  documentacao         String?        @map("documentação")
+  instalacao           String?        @map("instalação")
+  dependencias         String?        @map("dependências")
+  nivel_de_dificuldade String?        @map("nível de dificuldade")
+  created_at           DateTime       @default(now())
+  updated_at           DateTime       @updatedAt
+  tags                 ComponentTag[]
+  favorites            Favorite[]
+  accessLogs           AccessLog[]
+
+  @@index([categoria_id])
+  @@index([premium])
+  @@index([created_at])
+  @@map("components")
+}
+
+model Tag {
+  id         String         @id @default(uuid())
+  nome       String
+  slug       String         @unique
+  components ComponentTag[]
+
+  @@map("tags")
+}
+
+model ComponentTag {
+  component_id String
+  component    Component @relation(fields: [component_id], references: [id], onDelete: Cascade)
+  tag_id       String
+  tag          Tag       @relation(fields: [tag_id], references: [id], onDelete: Cascade)
+
+  @@id([component_id, tag_id])
+  @@map("component_tags")
+}
+
+model Favorite {
+  id           String    @id @default(uuid())
+  user_id      String
+  user         User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  component_id String
+  component    Component @relation(fields: [component_id], references: [id], onDelete: Cascade)
+  created_at   DateTime  @default(now())
+
+  @@unique([user_id, component_id])
+  @@map("favorites")
+}
+
+model AccessLog {
+  id           String    @id @default(uuid())
+  user_id      String
+  user         User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  component_id String
+  component    Component @relation(fields: [component_id], references: [id], onDelete: Cascade)
+  created_at   DateTime  @default(now())
+
+  @@map("access_logs")
+}

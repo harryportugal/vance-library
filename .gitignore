@@ -43,3 +43,8 @@ check_sizes.cjs
 /scratch/
 /temp_blur_src/
 /code.zip
+
+# Environment variables
+.env
+.env.local
+.env.*.local

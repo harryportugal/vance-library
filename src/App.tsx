@@ -22,6 +22,7 @@ import ClaudeChatInput from './components/ui/claude-style-chat-input';
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
+import { authClient } from './lib/auth-client';
 
 interface ComponentFile {
   name: string;
@@ -53,13 +54,9 @@ function getAssetUrl(url: string | null | undefined): string {
 }
 
 export default function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('vance_logged_in') === 'true';
-    } catch {
-      return false;
-    }
-  });
+  const { data: sessionData } = authClient.useSession();
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const isLoggedIn = !!sessionData;
 
   const lenisRef = useRef<Lenis | null>(null);
   const pageTransitionRef = useRef<PageTransitionRef>(null);
@@ -89,40 +86,18 @@ export default function App() {
   const handleLogin = () => {
     if (pageTransitionRef.current) {
       pageTransitionRef.current.play(() => {
-        try {
-          localStorage.setItem('vance_logged_in', 'true');
-        } catch (e) {
-          console.error(e);
-        }
-        setIsLoggedIn(true);
+        // Better Auth updates the session dynamically
       });
-    } else {
-      try {
-        localStorage.setItem('vance_logged_in', 'true');
-      } catch (e) {
-        console.error(e);
-      }
-      setIsLoggedIn(true);
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (pageTransitionRef.current) {
-      pageTransitionRef.current.play(() => {
-        try {
-          localStorage.removeItem('vance_logged_in');
-        } catch (e) {
-          console.error(e);
-        }
-        setIsLoggedIn(false);
+      pageTransitionRef.current.play(async () => {
+        await authClient.signOut();
       });
     } else {
-      try {
-        localStorage.removeItem('vance_logged_in');
-      } catch (e) {
-        console.error(e);
-      }
-      setIsLoggedIn(false);
+      await authClient.signOut();
     }
   };
 
@@ -195,11 +170,9 @@ export default function App() {
     if (pageTransitionRef.current) {
       pageTransitionRef.current.play(() => {
         setLoginInitialMode(mode);
-        setIsLoggedIn(false);
       });
     } else {
       setLoginInitialMode(mode);
-      setIsLoggedIn(false);
     }
   };
 
@@ -282,6 +255,16 @@ export default function App() {
 
   const handleSelectComponent = (comp: ComponentData | null) => {
     if (comp) {
+      // Route Protection & Premium validation
+      const isProComp = parseInt(comp.id) % 5 === 0;
+      const isUserPremium = sessionData?.user?.role === 'admin' || sessionData?.user?.plan === 'premium';
+
+      if (isProComp && !isUserPremium) {
+        setPricingModalOpen(true);
+        alert(lang === 'pt' ? 'Este recurso é exclusivo para assinantes Premium. Escolha um plano para liberar o acesso!' : 'This is a Premium-exclusive resource. Upgrade your plan to unlock access!');
+        return;
+      }
+
       setCatalogScrollY(window.scrollY);
       setIframeLoaded(false);
       setSelectedComponent(comp);
@@ -820,29 +803,39 @@ export default function App() {
             Planos
           </button>
           
-          <button 
-            onClick={() => handleNavigateToLogin('signin')}
-            className="px-[14px] py-1 bg-white text-black font-semibold text-xs rounded-full hover:bg-zinc-200 transition-all cursor-pointer hero-nav-action"
-          >
-            Entrar
-          </button>
+          {isLoggedIn ? (
+            <>
+              <button 
+                onClick={() => setProfileModalOpen(true)}
+                className="px-[14px] py-1 bg-transparent text-white border border-[#2c2c2e] font-semibold text-xs rounded-full hover:bg-[#1c1c1e] transition-all cursor-pointer hero-nav-action"
+              >
+                Perfil
+              </button>
+              
+              <button 
+                onClick={handleLogout}
+                className="px-[14px] py-1 bg-white text-black font-semibold text-xs rounded-full hover:bg-zinc-200 transition-all cursor-pointer hero-nav-action"
+              >
+                Sair
+              </button>
+            </>
+          ) : (
+            <>
+              <button 
+                onClick={() => handleNavigateToLogin('signin')}
+                className="px-[14px] py-1 bg-white text-black font-semibold text-xs rounded-full hover:bg-zinc-200 transition-all cursor-pointer hero-nav-action"
+              >
+                Entrar
+              </button>
 
-          <button 
-            onClick={() => handleNavigateToLogin('signup')}
-            className="px-[14px] py-1 bg-transparent text-white border border-[#2c2c2e] font-semibold text-xs rounded-full hover:bg-[#1c1c1e] transition-all cursor-pointer hero-nav-action"
-          >
-            Criar conta
-          </button>
-
-          {/* Custom Hamburger Menu Button (=) */}
-          <button 
-            onClick={handleLogout}
-            className="flex flex-col justify-center items-center gap-[3.5px] w-6 h-6 cursor-pointer shrink-0 ml-1 group hero-nav-action"
-            title="Sign Out"
-          >
-            <span className="w-4 h-[1.5px] bg-white rounded-full transition-all group-hover:bg-zinc-300" />
-            <span className="w-4 h-[1.5px] bg-white rounded-full transition-all group-hover:bg-zinc-300" />
-          </button>
+              <button 
+                onClick={() => handleNavigateToLogin('signup')}
+                className="px-[14px] py-1 bg-transparent text-white border border-[#2c2c2e] font-semibold text-xs rounded-full hover:bg-[#1c1c1e] transition-all cursor-pointer hero-nav-action"
+              >
+                Criar conta
+              </button>
+            </>
+          )}
         </div>
       </header>
 
@@ -1315,6 +1308,13 @@ export default function App() {
         <PricingModal 
           onClose={() => setPricingModalOpen(false)}
           theme={theme}
+          lang={lang}
+        />
+      )}
+
+      {profileModalOpen && (
+        <ProfileModal 
+          onClose={() => setProfileModalOpen(false)}
           lang={lang}
         />
       )}
@@ -2023,6 +2023,228 @@ function PricingModal({
 
         </div>
 
+      </div>
+    </div>
+  );
+}
+
+function ProfileModal({ 
+  onClose,
+  lang 
+}: { 
+  onClose: () => void,
+  lang: Language 
+}) {
+  const isPt = lang === 'pt';
+  const { data: sessionData } = authClient.useSession();
+  const user = sessionData?.user;
+
+  const [name, setName] = useState(user?.name || '');
+  const [image, setImage] = useState(user?.image || '');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isExiting, setIsExiting] = useState(false);
+
+  const handleClose = () => {
+    setIsExiting(true);
+    setTimeout(() => {
+      onClose();
+    }, 450);
+  };
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+    try {
+      const { error } = await authClient.updateUser({
+        name,
+        image,
+      });
+      if (error) {
+        setErrorMessage(error.message || "Erro ao atualizar perfil.");
+      } else {
+        setSuccessMessage("Perfil atualizado com sucesso!");
+      }
+    } catch (err) {
+      setErrorMessage("Erro ao salvar alterações.");
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+    try {
+      const { error } = await authClient.changePassword({
+        currentPassword,
+        newPassword,
+      });
+      if (error) {
+        setErrorMessage(error.message || "Erro ao alterar a senha.");
+      } else {
+        setSuccessMessage("Senha atualizada com sucesso!");
+        setCurrentPassword('');
+        setNewPassword('');
+      }
+    } catch (err) {
+      setErrorMessage("Erro ao atualizar senha.");
+    }
+  };
+
+  return (
+    <div
+      className={`fixed inset-0 z-50 bg-[#0c0c0e] overflow-y-auto flex flex-col items-center justify-start p-4 md:p-8 font-sans ${
+        isExiting ? 'animate-plans-exit' : 'animate-plans-enter'
+      }`}
+      onClick={handleClose}
+    >
+      <button 
+        onClick={handleClose}
+        className="absolute top-6 right-6 p-2 rounded-full border border-zinc-800 bg-zinc-950/80 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all cursor-pointer z-50 shadow-lg"
+      >
+        <X size={18} />
+      </button>
+
+      <div 
+        className="w-full max-w-2xl flex flex-col items-center gap-6 py-12 md:py-16 relative"
+        onClick={e => e.stopPropagation()}
+      >
+        <div 
+          className="absolute text-[120px] sm:text-[180px] md:text-[220px] font-black text-white/[0.03] tracking-tighter select-none pointer-events-none z-0 top-[10%] left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-center animate-slide-up-fade"
+        >
+          Profile
+        </div>
+
+        <div className="w-full bg-[#0f0f11] border border-white/10 rounded-[32px] p-6 sm:p-10 shadow-[0_32px_80px_rgba(0,0,0,0.95)] z-10 relative mt-20 backdrop-blur-xl space-y-8">
+          <div>
+            <h3 className="text-xl font-bold text-white tracking-tight">
+              {isPt ? 'Configurações de Conta' : 'Account Settings'}
+            </h3>
+            <p className="text-xs text-zinc-500 mt-1">
+              {isPt ? 'Gerencie suas credenciais e plano de assinatura' : 'Manage your credentials and subscription plan'}
+            </p>
+          </div>
+
+          {errorMessage && (
+            <div className="py-2 px-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-semibold">
+              {errorMessage}
+            </div>
+          )}
+          {successMessage && (
+            <div className="py-2 px-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-xs font-semibold">
+              {successMessage}
+            </div>
+          )}
+
+          {/* User Info Overview */}
+          <div className="flex flex-col sm:flex-row items-center gap-5 p-5 bg-zinc-950/40 border border-zinc-900 rounded-2xl">
+            <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-900 border border-zinc-800 shrink-0 flex items-center justify-center">
+              {image ? (
+                <img src={image} alt={name} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xl font-extrabold text-white">{name.substring(0, 1).toUpperCase() || 'U'}</span>
+              )}
+            </div>
+            <div className="flex-1 text-center sm:text-left space-y-1 min-w-0">
+              <h4 className="text-base font-bold text-white truncate">{name}</h4>
+              <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
+                <span className="px-2 py-0.5 text-[9px] font-bold bg-zinc-900 text-zinc-400 border border-zinc-800 rounded-md uppercase">
+                  {user?.role || 'User'}
+                </span>
+                <span className="px-2 py-0.5 text-[9px] font-bold bg-zinc-900 text-emerald-400 border border-zinc-800 rounded-md uppercase">
+                  {user?.plan === 'premium' ? 'Premium' : 'Free'}
+                </span>
+                <span className="px-2 py-0.5 text-[9px] font-bold bg-zinc-900 text-zinc-400 border border-zinc-800 rounded-md uppercase">
+                  Status: {(user as any)?.status || 'ativo'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Form 1: Edit Name & Avatar */}
+          <form onSubmit={handleUpdateProfile} className="space-y-4 pt-2">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+              {isPt ? 'Editar Perfil' : 'Edit Profile'}
+            </h4>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Nome</label>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  className="bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-zinc-700"
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">URL do Avatar</label>
+                <input 
+                  type="text" 
+                  value={image}
+                  onChange={e => setImage(e.target.value)}
+                  placeholder="https://..."
+                  className="bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-zinc-700"
+                />
+              </div>
+            </div>
+
+            <div className="text-right">
+              <button 
+                type="submit"
+                className="px-5 py-2 bg-white hover:bg-zinc-200 text-black text-xs font-bold rounded-xl transition-all cursor-pointer"
+              >
+                {isPt ? 'Salvar Perfil' : 'Save Profile'}
+              </button>
+            </div>
+          </form>
+
+          <hr className="border-zinc-900" />
+
+          {/* Form 2: Change Password */}
+          <form onSubmit={handleChangePassword} className="space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+              {isPt ? 'Alterar Senha' : 'Change Password'}
+            </h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Senha Atual</label>
+                <input 
+                  type="password" 
+                  value={currentPassword}
+                  onChange={e => setCurrentPassword(e.target.value)}
+                  className="bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-zinc-700"
+                  required
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Nova Senha</label>
+                <input 
+                  type="password" 
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  className="bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-zinc-700"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="text-right">
+              <button 
+                type="submit"
+                className="px-5 py-2 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 text-xs font-bold rounded-xl transition-all cursor-pointer"
+              >
+                {isPt ? 'Alterar Senha' : 'Change Password'}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );
