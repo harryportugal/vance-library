@@ -1,0 +1,16 @@
+{
+  "app": {
+    "[project]/public/components/Page Transitions/14/extracted/svg-page-transition-master/src/app/_not-found/page": [
+      "static/media/ab57efd000576a30-s.p.3fofz6dws3mg0.woff2"
+    ],
+    "[project]/public/components/Page Transitions/14/extracted/svg-page-transition-master/src/app/about/page": [
+      "static/media/ab57efd000576a30-s.p.3fofz6dws3mg0.woff2"
+    ],
+    "[project]/public/components/Page Transitions/14/extracted/svg-page-transition-master/src/app/page": [
+      "static/media/ab57efd000576a30-s.p.3fofz6dws3mg0.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}
