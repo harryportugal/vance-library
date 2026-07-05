@@ -32,34 +32,13 @@ dist-ssr
 !/public/components/*/
 !/public/components/*/*/
 !/public/components/*/*/extracted/
-!/public/components/*/*/extracted/*/
 
-# Whitelist only the compiled static directories and index files
-!/public/components/*/*/extracted/files/
-!/public/components/*/*/extracted/files/**
-!/public/components/*/*/extracted/*/dist/
-!/public/components/*/*/extracted/*/dist/**
-!/public/components/*/*/extracted/*/out/
-!/public/components/*/*/extracted/*/out/**
-!/public/components/*/*/extracted/*/build/
-!/public/components/*/*/extracted/*/build/**
+# Whitelist everything under extracted/ so Git tracks all precompiled and static files (e.g. styles.css)
+!/public/components/*/*/extracted/**
 
-# Whitelist static files for components that do not have package.json (no build step, pure static)
-!/public/components/*/*/extracted/*/index.html
-!/public/components/*/*/extracted/*/script.js
-!/public/components/*/*/extracted/*/style.css
-!/public/components/*/*/extracted/*/css/
-!/public/components/*/*/extracted/*/css/**
-!/public/components/*/*/extracted/*/js/
-!/public/components/*/*/extracted/*/js/**
-!/public/components/*/*/extracted/*/assets/
-!/public/components/*/*/extracted/*/assets/**
-!/public/components/*/*/extracted/*/images/
-!/public/components/*/*/extracted/*/images/**
-!/public/components/*/*/extracted/*/img/
-!/public/components/*/*/extracted/*/img/**
-!/public/components/*/*/extracted/*/media/
-!/public/components/*/*/extracted/*/media/**
+# But ignore node_modules under extracted/
+/public/components/*/*/extracted/**/node_modules/
+
 check_sizes.cjs
 /scratch/
 /temp_blur_src/

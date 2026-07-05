@@ -1,0 +1,3 @@
+module.exports=[36192,a=>{a.v({className:"inter_394d8b56-module__gDtpIG__className"})},72014,a=>{"use strict";var b=a.i(8171),c=a.i(36192);let d={className:c.default.className,style:{fontFamily:"'Inter', 'Inter Fallback'",fontStyle:"normal"}};null!=c.default.variable&&(d.variable=c.default.variable),a.s(["default",0,function({Component:a,pageProps:c}){return(0,b.jsx)("main",{className:d.className,children:(0,b.jsx)(a,{...c})})}],72014)}];
+
+//# sourceMappingURL=%5Broot-of-the-server%5D__0rteg7u._.js.map
