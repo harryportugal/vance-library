@@ -1,0 +1,736 @@
+<!DOCTYPE html><html lang="en"> <head>
+  <!-- Automatic High-Performance Local Library Inject -->
+  <script src="/libs/three.min.js"></script>
+  <script src="/libs/GLTFLoader.js"></script>
+  <script src="/libs/gsap.min.js"></script>
+  <script src="/libs/ScrollTrigger.min.js"></script>
+  <script src="/libs/ScrollToPlugin.min.js"></script>
+  <script src="/libs/CustomEase.min.js"></script>
+  <script src="/libs/Flip.min.js"></script>
+  <script src="/libs/Observer.min.js"></script>
+  <script src="/libs/lenis.min.js"></script>
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+    window.SplitType = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Local Library Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Local Library Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Library CDN Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="preload" href="/fonts/satoshi/Satoshi-Variable.ttf" as="font" type="font/ttf" crossorigin><link rel="icon" type="image/svg+xml" href="https://tympanus.net/favicon/favicon.svg"><link rel="shortcut icon" href="https://tympanus.net/favicon/favicon.ico"><meta name="generator" content="Astro v5.16.15"><link rel="stylesheet" href="https://use.typekit.net/gwa0xin.css"><title>WebGL Pixel Effect on Scroll with GSAP, Three.js and Astro</title><style>@font-face{font-family:Satoshi;src:url(/fonts/satoshi/Satoshi-Variable.ttf) format("truetype");font-weight:100 900;font-style:normal;font-display:swap}:root{font-size:13px;--color-text: #000000;--color-bg: #ffffff;--color-link: #000000;--color-link-hover: #000000;--page-padding: 2rem}*,*:before,*:after{margin:0;padding:0;box-sizing:border-box}body{margin:0;color:var(--color-text);background-color:var(--color-bg);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;overflow-y:scroll;font-family:Satoshi,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans,Liberation Sans,sans-serif}a{text-decoration:none;color:var(--color-link);outline:none;cursor:pointer;&:hover{text-decoration:none;color:var(--color-link-hover)}&:focus{outline:none;background:#d3d3d3;&:not(:focus-visible){background:transparent}&:focus-visible{outline:2px solid red;background:transparent}}}.frame{padding:1rem var(--page-padding);display:grid;z-index:1000;position:relative;grid-row-gap:1rem;grid-column-gap:2rem;pointer-events:none;justify-items:start;grid-template-columns:auto auto auto 1fr;grid-template-areas:"title title title title" "back archive github ..." "tags tags tags tags" "sponsor sponsor sponsor sponsor";#cdawrap{justify-self:start;grid-area:sponsor}a,button{pointer-events:auto}.frame__title{grid-area:title;font-size:inherit;margin:0;font-weight:700}.frame__back{grid-area:back;justify-self:start}.frame__archive{grid-area:archive;justify-self:start}.frame__github{grid-area:github}.frame__tags{grid-area:tags;display:flex;flex-wrap:wrap;gap:1rem}@media screen and (min-width:53em){grid-template-columns:auto auto auto auto 1fr;grid-template-rows:auto auto;align-content:space-between;grid-template-areas:"title back github archive demos" "tags tags tags sponsor sponsor";.frame__tags{align-self:end}.frame__title{padding-right:2rem}#cdawrap{justify-self:end;text-align:right;max-width:300px}}}#app{position:relative;z-index:10}#webgl{position:fixed;z-index:0;inset:0;pointer-events:none}h1{font-size:clamp(2rem,5vw,5rem);font-weight:400;text-transform:uppercase;line-height:100%;align-self:end;padding-bottom:1.5rem;padding-left:1rem}.container,.grid-container{display:flex;flex-direction:column}.grid{display:grid;padding:10vh var(--page-padding);column-gap:1rem;row-gap:30vh;grid-template-columns:repeat(9,1fr)}.grid__item{grid-column:var(--c) / span var(--s);grid-row:var(--r);aspect-ratio:var(--ar)}.grid__item p{padding-top:.5rem}.container img{width:100%;opacity:0}.details{max-width:100%;padding:var(--page-padding)}.details header{padding-top:3vmax}.details-container{width:100%;height:100dvh;overflow:hidden}.details img{width:100%;height:100%;object-fit:cover;opacity:0}.details-data{display:grid;grid-template-columns:1fr auto auto auto;gap:2rem;padding-bottom:.5rem;align-items:end}[data-text-animation],[data-icon]{visibility:hidden}.related{container-type:inline-size;padding-top:40vh}.related p{text-align:center;padding-top:3rem}.relgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;padding:5rem var(--page-padding) 10vh;width:100%;max-width:800px;margin:0 auto}.relgrid__item{display:flex;flex-direction:column;text-decoration:none;color:inherit;overflow:hidden}.relgrid__item-img{width:100%;aspect-ratio:4 / 3;background-size:cover;background-position:center;filter:grayscale(1) brightness(.8);transition:all .5s ease}.relgrid__item:hover .relgrid__item-img{filter:grayscale(0) brightness(1)}.relgrid__item-title{padding:.5rem 0;font-size:1rem;font-weight:400;line-height:1.4}.relgrid__item:focus-visible{outline:2px solid #fff;outline-offset:4px}@container (max-width: 800px){.relgrid{grid-template-columns:1fr}.relgrid__item-img{display:none}.relgrid__item-title{padding:.25rem;line-height:1}}
+</style></head> <body data-barba="wrapper"> <div id="app" data-barba="container" data-barba-namespace="home"> <div id="smooth-content" data-page-template="home">  <div data-gallery-container class="container"> <header class="frame"> <span class="frame__title"><a href="https://tympanus.net/codrops/demos/?tag=webgl">#WebGL</a> Pixel Effect
+    on <a href="https://tympanus.net/codrops/demos/?tag=scroll">#Scroll</a> with <a href="https://tympanus.net/codrops/demos/?tag=gsap">#GSAP</a>, <a href="https://tympanus.net/codrops/demos/?tag=three-js">#Three.js</a> and
+<a href="https://tympanus.net/codrops/demos/?tag=astro">#Astro</a></span> <a class="frame__back" href="https://tympanus.net/codrops/?p=107628">Tutorial</a> <a class="frame__archive" href="https://tympanus.net/codrops/hub/">All demos</a> <a class="frame__github" href="https://github.com/J0SUKE/gsap-threejs-codrops">GitHub</a> </header> <div class="grid-container"> <div class="grid"> <h1 class="grid__item" style="--r: 1; --c: 5; --s: 5;" data-text-animation-in-duration="0.5" data-text-animation-out-duration="0.4" data-text-animation-in-delay="0.4" data-text-animation data-text-animation-split>
+Northern <br>Expeditions <br>1970–1978
+</h1> <a class="grid__item" href="/1" style="--r: 1; --c: 1; --s: 4"> <img loading="eager" src="/assets/1.webp" alt=""> <p data-text-animation> Morning Ascent </p> </a> <a class="grid__item" href="/2" style="--r: 2; --c: 4; --s: 3"> <img loading="eager" src="/assets/2.webp" alt=""> <p data-text-animation> Camp at Dusk </p> </a> <a class="grid__item" href="/3" style="--r: 2; --c: 7; --s: 2"> <img loading="eager" src="/assets/3.webp" alt=""> <p data-text-animation> Crossing the Valley </p> </a> <a class="grid__item" href="/4" style="--r: 3; --c: 3; --s: 4"> <img loading="eager" src="/assets/4.webp" alt=""> <p data-text-animation> Quiet Plateau </p> </a> <a class="grid__item" href="/5" style="--r: 4; --c: 1; --s: 4"> <img loading="eager" src="/assets/5.webp" alt=""> <p data-text-animation> Rest Stop </p> </a> <p class="grid__item" style="font-size: 1.45rem; --r: 5; --c: 4; --s: 4;" data-text-animation-out-stagger="-0.03" data-text-animation data-text-animation-split>
+Dark spruce forest frowned on either side the frozen waterway. The
+          trees had been stripped by a recent wind of their white covering of
+          frost, and they seemed to lean toward each other, black and ominous,
+          in the fading light. A vast silence reigned over the land. The land
+          itself was a desolation, lifeless, without movement, so lonely and
+          cold that the spirit of it was not even that of sadness. There was a
+          hint in it of laughter, but a laughter more terrible than any
+          sadness—a laughter that was mirthless as the smile of the sphinx, a
+          laughter cold as the frost and partaking of the grimness of
+          infallibility. It was the masterful and incommunicable wisdom of
+          eternity laughing at the futility of life and the effort of life. It
+          was the Wild, the savage, frozen-hearted Northland Wild.
+</p> <a class="grid__item" href="/6" style="--r: 6; --c: 3; --s: 5"> <img loading="eager" src="/assets/6.webp" alt=""> <p data-text-animation> Evening Descent </p> </a> <a class="grid__item" href="/7" style="--r: 7; --c: 4; --s: 4"> <img loading="eager" src="/assets/7.webp" alt=""> <p data-text-animation> Along the Ridge </p> </a> <a class="grid__item" href="/8" style="--r: 8; --c: 1; --s: 3"> <img loading="eager" src="/assets/8.webp" alt=""> <p data-text-animation> Shelter from the Wind </p> </a> <p class="grid__item" style="--r: 9; --c: 4; --s: 3;" data-text-animation-out-stagger="-0.03" data-text-animation data-text-animation-split>
+The man strode ahead of the team. He was a young man, tall, strong,
+          with light hair and blue eyes, and his face was expressionless as the
+          land he traversed. He carried his rifle loosely in his hand, as though
+          it were part of his body, and he swung along with the ease of long
+          familiarity. The woman followed the sled. She was young, too, and her
+          face bore the stamp of the Northland—endurance and patience, and a
+          vague hint of suffering. The child, wrapped in furs, slept in the
+          sled, its face peaceful and unconscious of the grim struggle being
+          waged on its behalf.
+</p> <a class="grid__item" href="/9" style="--r: 10; --c: 4; --s: 5"> <img loading="eager" src="/assets/9.webp" alt=""> <p data-text-animation> Last Light </p> </a> </div> </div> </div> <section class="related"> <p>You might also like</p> <div class="relgrid"> <a class="relgrid__item" href="https://tympanus.net/Tutorials/InfiniteCanvas/" target="_blank"> <div class="relgrid__item-img" style="
+            background-image: url(https://tympanus.net/codrops/wp-content/uploads/2025/12/edoardo-lunardi-infinite-canvas-featured-image-400x300.jpg);
+          "></div> <h3 class="relgrid__item-title">
+Infinite Canvas: Building a Seamless, Pan-Anywhere Image Space
+</h3> </a> <a class="relgrid__item" href="https://tympanus.net/Tutorials/PalmerDraggablerelgrid/" target="_blank"> <div class="relgrid__item-img" style="
+            background-image: url(https://tympanus.net/codrops/wp-content/uploads/2025/09/palmersgrid-400x300.jpg);
+          "></div> <h3 class="relgrid__item-title">
+Recreating Palmer’s Draggable Product relgrid with GSAP
+</h3> </a> <a class="relgrid__item" href="https://tympanus.net/Development/OnScrollTextHighlight/" target="_blank"> <div class="relgrid__item-img" style="background-image: url(https://tympanus.net/codrops/wp-content/uploads/2024/04/TextHighlight-400x300.jpg)"></div> <h3 class="relgrid__item-title">
+Some On-Scroll Text Highlight Animations
+</h3> </a> <a class="relgrid__item" href="https://tympanus.net/Tutorials/Cinematic3DScroll/" target="_blank"> <div class="relgrid__item-img" style="
+            background-image: url(https://tympanus.net/codrops/wp-content/uploads/2025/11/cinematicGSAP_featured-400x300.jpeg);
+          "></div> <h3 class="relgrid__item-title">
+How to Build Cinematic 3D Scroll Experiences with GSAP
+</h3> </a> <a class="relgrid__item" href="https://tympanus.net/Tutorials/TelescopeZoom/" target="_blank"> <div class="relgrid__item-img" style="
+            background-image: url(https://tympanus.net/codrops/wp-content/uploads/2025/10/thumb-3-400x300.png);
+          "></div> <h3 class="relgrid__item-title">
+Layered Zoom Scroll Effect with GSAP ScrollSmoother and ScrollTrigger
+</h3> </a> <a class="relgrid__item" href="https://tympanus.net/Tutorials/ShaderAnimationGSAP/" target="_blank"> <div class="relgrid__item-img" style="background-image: url(https://tympanus.net/codrops/wp-content/uploads/2025/10/animating-shaders-with-gsap-for-your-immersive-website-cover-400x300.jpg)"></div> <h3 class="relgrid__item-title">
+WebGL Shaders with GSAP: Ripples, Reveals, and Dynamic Blur Effects
+</h3> </a> </div> </section>  </div> </div> <canvas id="webgl"></canvas> <script type="module" src="/_astro/Layout.astro_astro_type_script_index_0_lang.BVjYAvpe.js"></script> </body> </html>

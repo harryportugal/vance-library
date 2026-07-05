@@ -1,0 +1,3 @@
+module.exports=[40936,a=>{"use strict";var b=a.i(7997);a.s(["default",0,function({children:a}){return(0,b.jsx)("html",{lang:"en",children:(0,b.jsx)("body",{children:a})})},"metadata",0,{title:"Ingamana Scroll Animation | Codegrid",description:"Ingamana Scroll Animation | Codegrid"}])},91086,a=>{a.n(a.i(40936))}];
+
+//# sourceMappingURL=06a2_36_extracted_ingamana-scroll-animation-nextjs_src_app_layout_06s3b-5.js.map

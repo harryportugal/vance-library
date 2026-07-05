@@ -1,0 +1,13 @@
+var R=require("../../chunks/ssr/[turbopack]_runtime.js")("server/app/_not-found/page.js")
+R.c("server/chunks/ssr/[root-of-the-server]__0x_m8xl._.js")
+R.c("server/chunks/ssr/node_modules_next_21a4t2i._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_esm_build_templates_app-page_0toj290.js")
+R.c("server/chunks/ssr/[root-of-the-server]__1f1-kpu._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__0g84hko._.js")
+R.c("server/chunks/ssr/public_components_Scroll Animation_56_extracted_fall-master_src_1j9x8bw._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_0wpq8j3._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_forbidden_0symwr9.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_unauthorized_0l_sp0x.js")
+R.c("server/chunks/ssr/0cpb_extracted_fall-master__next-internal_server_app__not-found_page_actions_1cx9u0u.js")
+R.m(35215)
+module.exports=R.m(35215).exports
