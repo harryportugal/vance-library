@@ -1,0 +1,3 @@
+module.exports=[50222,a=>{"use strict";var b=a.i(7997);a.s(["default",0,function({children:a}){return(0,b.jsx)("html",{lang:"en",children:(0,b.jsx)("body",{children:a})})},"metadata",0,{title:"Next.js Text Reveal Animation | Codegrid",description:"Next.js Text Reveal Animation | Codegrid"}])},61163,a=>{a.n(a.i(50222))}];
+
+//# sourceMappingURL=public_components_Text%20Animations_17_extracted_files_src_app_layout_200134-.js.map

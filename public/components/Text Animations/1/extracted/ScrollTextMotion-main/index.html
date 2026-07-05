@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en" class="no-js">
+  <head>
+  <!-- Automatic High-Performance Local Library Inject -->
+  <script src="/libs/three.min.js"></script>
+  <script src="/libs/GLTFLoader.js"></script>
+  <script src="/libs/gsap.min.js"></script>
+  <script src="/libs/ScrollTrigger.min.js"></script>
+  <script src="/libs/ScrollToPlugin.min.js"></script>
+  <script src="/libs/CustomEase.min.js"></script>
+  <script src="/libs/Flip.min.js"></script>
+  <script src="/libs/Observer.min.js"></script>
+  <script src="/libs/lenis.min.js"></script>
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+    window.SplitType = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Local Library Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Local Library Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Library CDN Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>On-Scroll Text Motion | </title>
+    <meta name="description" content="On-scroll animations for typogrphic elements with GSAP" />
+    <meta name="keywords" content="gsap, on-scroll, scroll based text animation, typgrahy, kinetic typography" />
+    <meta name="author" content="" />
+    <link rel="icon" type="image/svg+xml" href="https://tympanus.net/favicon/favicon.svg" />
+    <link rel="shortcut icon" href="https://tympanus.net/favicon/favicon.ico" />
+    <link rel="stylesheet" href="https://use.typekit.net/upd0woi.css" />
+    <link rel="stylesheet" type="text/css" href="css/base.css" />
+    <script>
+      document.documentElement.className = 'js';
+    </script>
+  </head>
+  <body class="demo-1">
+
+    <div class="logo fixed">
+      <span>Mens Absens</span>
+    </div>
+    <main id="smooth-content">
+      <div class="content">
+        <div class="group">
+          <div class="el pos-4" data-alt-pos="pos-2">Signal</div>
+          <div class="el pos-4" data-alt-pos="pos-2">Vacant orbit</div>
+          <div class="el pos-4" data-alt-pos="pos-2">Quantum waves</div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-1" data-alt-pos="pos-3">Neural glow</div>
+          <div class="el pos-1" data-alt-pos="pos-3">Micro distortions</div>
+          <div class="el pos-1" data-alt-pos="pos-3">Data streams</div>
+          <div class="el pos-1" data-alt-pos="pos-3">Spark</div>
+          <div class="el pos-1" data-alt-pos="pos-3">Cold radiance</div>
+        </div>
+
+        <div class="group">
+          <div class="el el--xl pos-1" data-alt-pos="pos-2" data-scramble-duration="2.5">M</div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-1" data-alt-pos="pos-3" data-scramble-duration="0">アクセス権限がありません</div>
+          <div class="el pos-1 typing-indicator" data-alt-pos="pos-3" data-scramble-duration="0">█</div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-2" data-alt-pos="pos-5">Beacon</div>
+          <div class="el pos-2" data-alt-pos="pos-5">Synthetic veil</div>
+          <div class="el pos-2" data-alt-pos="pos-5">Hidden strata</div>
+        </div>
+
+        <div class="group">
+          <div class="el el--xl pos-3" data-alt-pos="pos-9" data-scramble-duration="2.5">S</div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-3" data-alt-pos="pos-2">Nebula</div>
+          <div class="el pos-3" data-alt-pos="pos-2">Digital scatter</div>
+          <div class="el pos-3" data-alt-pos="pos-2">Orbital drift</div>
+          <div class="el pos-3" data-alt-pos="pos-2">Photon shards</div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-1" data-alt-pos="pos-3" data-scramble-duration="0">操作は許可されていません</div>
+          <div class="el pos-1 typing-indicator" data-alt-pos="pos-3" data-scramble-duration="0">█</div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-2" data-alt-pos="pos-4">Anomaly</div>
+          <div class="el pos-2" data-alt-pos="pos-4">Dark offset</div>
+          <div class="el pos-2" data-alt-pos="pos-4">Gradual decay</div>
+          <div class="el pos-2" data-alt-pos="pos-4">Temporal imprint</div>
+          <div class="el pos-2" data-alt-pos="pos-4">Stable rupture</div>
+          <div class="el pos-2" data-alt-pos="pos-4">Harmonic field</div>
+        </div>
+
+        <div class="group">
+          <div class="el el--xl pos-1" data-alt-pos="pos-3" data-scramble-duration="2.5">A</div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-2" data-alt-pos="pos-9">Latent energy</div>
+          <div class="el pos-2" data-alt-pos="pos-9">Spectral imprint</div>
+          <div class="el pos-2" data-alt-pos="pos-9">Muted emission</div>
+          <div class="el pos-2" data-alt-pos="pos-9">Archived potential</div>
+          <div class="el pos-2" data-alt-pos="pos-9">Quantum impulse</div>
+          <div class="el pos-2" data-alt-pos="pos-9">Distributed field</div>
+        </div>
+
+        <div class="group">
+          <div class="el el--xl pos-3" data-alt-pos="pos-10" data-scramble-duration="2.5" data-flip-ease="expo.in">
+            B
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-4" data-alt-pos="pos-3">Flare</div>
+          <div class="el pos-4" data-alt-pos="pos-3">Phase transit</div>
+          <div class="el pos-4" data-alt-pos="pos-3">Slow orbit</div>
+          <div class="el pos-4" data-alt-pos="pos-3">Merged signal</div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-1" data-alt-pos="pos-3" data-scramble-duration="0">権限が不足しています</div>
+          <div class="el pos-1 typing-indicator" data-alt-pos="pos-3" data-scramble-duration="0">█</div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-3" data-alt-pos="pos-5">Latent charge</div>
+          <div class="el pos-3" data-alt-pos="pos-5">Nano beacon</div>
+          <div class="el pos-3" data-alt-pos="pos-5">Photon trail</div>
+          <div class="el pos-3" data-alt-pos="pos-5">Diffuse render</div>
+        </div>
+
+        <div class="group">
+          <div class="el el--xl pos-2" data-alt-pos="pos-3" data-scramble-duration="2.5" data-scramble-duration="2.5">
+            N
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-3" data-alt-pos="pos-6">Silent current</div>
+          <div class="el pos-3" data-alt-pos="pos-6">Orbital marker</div>
+          <div class="el pos-3" data-alt-pos="pos-6">Radiant vector</div>
+          <div class="el pos-3" data-alt-pos="pos-6">Soft projection</div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-2" data-alt-pos="pos-7">Quantum residue</div>
+          <div class="el pos-2" data-alt-pos="pos-7">Signal anchor</div>
+          <div class="el pos-2" data-alt-pos="pos-7">Luminous path</div>
+          <div class="el pos-2" data-alt-pos="pos-7">Ambient blur</div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-3" data-alt-pos="pos-8">Dormant voltage</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Micro relay</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Spectral trace</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Diffuse mapping</div>
+
+          <div class="el pos-3" data-alt-pos="pos-8">Residual energy</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Nano transmitter</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Photon residue</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Soft raster</div>
+
+          <div class="el pos-3" data-alt-pos="pos-8">Stored impulse</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Quantum locator</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Radiant filament</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Light diffusion</div>
+
+          <div class="el pos-3" data-alt-pos="pos-8">Static potential</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Signal node</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Energy wake</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Blurred output</div>
+
+          <div class="el pos-3" data-alt-pos="pos-8">Hidden current</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Data beacon</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Lumen echo</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Soft synthesis</div>
+
+          <div class="el pos-3" data-alt-pos="pos-8">Quantum latency</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Neural marker</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Optic trail</div>
+          <div class="el pos-3" data-alt-pos="pos-8">Diffuse signal</div>
+        </div>
+
+        <div class="group">
+          <div class="el pos-1" data-alt-pos="pos-1">Residual charge</div>
+          <div class="el pos-1" data-alt-pos="pos-2">Optical trace</div>
+          <div class="el pos-1" data-alt-pos="pos-4">Soft output</div>
+          <div class="el pos-1" data-alt-pos="pos-5">Stored voltage</div>
+          <div class="el pos-1" data-alt-pos="pos-6">Nano impulse</div>
+          <div class="el pos-1" data-alt-pos="pos-4">Diffuse field</div>
+        </div>
+      </div>
+      <section class="related">
+        <p>You might also like</p>
+        <div class="grid">
+          <a
+            class="grid__item"
+            href="https://tympanus.net/Development/LineTextHoverAnimations/index.html"
+            target="_blank"
+          >
+            <div
+              class="grid__item-img"
+              style="
+                background-image: url(https://tympanus.net/codrops/wp-content/uploads/2024/06/terminalhover_feat.jpg);
+              "
+            ></div>
+            <h3 class="grid__item-title">Hover Animations for Terminal-like Typography</h3>
+          </a>
+
+          <a class="grid__item" href="https://tympanus.net/Development/ScrollBlurTypography/" target="_blank">
+            <div
+              class="grid__item-img"
+              style="
+                background-image: url(https://tympanus.net/codrops/wp-content/uploads/2024/04/blurrytext_featured.jpg);
+              "
+            ></div>
+            <h3 class="grid__item-title">Blurry Text Reveal on Scroll</h3>
+          </a>
+
+          <a class="grid__item" href="https://tympanus.net/Development/OnScrollTextHighlight/" target="_blank">
+            <div
+              class="grid__item-img"
+              style="background-image: url(https://tympanus.net/codrops/wp-content/uploads/2024/04/TextHighlight.jpg)"
+            ></div>
+            <h3 class="grid__item-title">Some On-Scroll Text Highlight Animations</h3>
+          </a>
+
+          <a class="grid__item" href="https://tympanus.net/Development/ImageExpansionTypography/" target="_blank">
+            <div
+              class="grid__item-img"
+              style="
+                background-image: url(https://tympanus.net/codrops/wp-content/uploads/2024/04/expandimage_feat.jpg);
+              "
+            ></div>
+            <h3 class="grid__item-title">On-Scroll Expanding Image Animation within Typography</h3>
+          </a>
+
+          <a class="grid__item" href="https://tympanus.net/Development/TextBlockTransitions/index.html" target="_blank">
+            <div
+              class="grid__item-img"
+              style="
+                background-image: url(https://tympanus.net/codrops/wp-content/uploads/2023/07/textbocktransitions.jpg);
+              "
+            ></div>
+            <h3 class="grid__item-title">Inspiration for Text Block Transitions</h3>
+          </a>
+
+          <a class="grid__item" href="https://tympanus.net/Development/TypeShuffleAnimation/" target="_blank">
+            <div
+              class="grid__item-img"
+              style="background-image: url(https://tympanus.net/codrops/wp-content/uploads/2023/02/typeshuffle.jpg)"
+            ></div>
+            <h3 class="grid__item-title">Shuffling Typography Animation</h3>
+          </a>
+
+          <a class="grid__item" href="https://tympanus.net/Development/TextRepetitionEffect/index.html" target="_blank">
+            <div
+              class="grid__item-img"
+              style="background-image: url(https://tympanus.net/codrops/wp-content/uploads/2022/04/TextRep_feat.jpg)"
+            ></div>
+            <h3 class="grid__item-title">On-Scroll Text Repetition Animation</h3>
+          </a>
+
+          <a class="grid__item" href="https://tympanus.net/Development/KineticTypePageTransition/" target="_blank">
+            <div
+              class="grid__item-img"
+              style="
+                background-image: url(https://tympanus.net/codrops/wp-content/uploads/2021/09/KineticTypePageTransition_featured.jpg);
+              "
+            ></div>
+            <h3 class="grid__item-title">Kinetic Typography Page Transition</h3>
+          </a>
+        </div>
+      </section>
+    </main>
+    <!-- GSAP library -->
+    
+    <!-- GSAP ScrollTrigger plugin -->
+    
+    <!-- GSAP ScrollSmoother plugin -->
+    <script src="js/ScrollSmoother.min.js"></script>
+    <!-- GSAP Flip plugin -->
+    
+    <!-- GSAP Flip plugin -->
+    <script src="js/ScrambleTextPlugin.min.js"></script>
+    <!-- Scripts for the effect -->
+    <script src="js/index.js"></script>
+  </body>
+</html>

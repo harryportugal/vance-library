@@ -1,0 +1,3 @@
+module.exports=[89785,a=>{"use strict";var b=a.i(7997);a.s(["default",0,function({children:a}){return(0,b.jsx)("html",{lang:"en",children:(0,b.jsx)("body",{children:a})})},"metadata",0,{title:"Text Reveal Animation | Codegrid",description:"Text Reveal Animation | Codegrid"}])},49384,a=>{a.n(a.i(89785))}];
+
+//# sourceMappingURL=0scz_Text%20Animations_12_extracted_next-text-reveal-animation_src_app_layout_1_g9m1s.js.map

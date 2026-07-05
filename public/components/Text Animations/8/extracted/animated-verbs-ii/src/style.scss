@@ -1,0 +1,222 @@
+// ==================================================
+// Base styles imported from original Animated Verbs
+// https://codepen.io/hexagoncircle/pen/MWgbqON
+// ==================================================
+$colors: #e74c3c, #f5f6fa, #48dbfb, #9980FA, #F79F1F, #f8c291;
+
+.headline {
+  @for $i from 1 through length($colors) {
+    &:nth-child(#{$i}) {
+      --color: #{nth($colors, $i)};
+    }
+  }
+}
+
+// =========================
+// Headline animations
+// =========================
+
+.headline--fade {
+  .char {
+    --name: fade;
+    --dur: 2s;
+    --del: calc(var(--distance-percent) * 0.15s);
+    --td: ease-in-out;
+    
+    transform-origin: 0 100%;
+  }
+  
+  @keyframes fade {
+    50% { opacity: 0; }
+  }
+}
+
+.headline--ghost {
+  .char {
+    --name: rise;
+    --dur: 3s;
+    --del: calc(var(--distance-percent) * 0.125s);
+    --tf: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    
+    transform-origin: 50% 100%;
+    
+    &:after {
+      animation: ghost var(--dur) ease-in var(--del) infinite;
+      content: attr(data-char);
+      opacity: 0;
+      transform-origin: 100% 50%;
+      visibility: visible;
+    }
+  }
+  
+  @keyframes rise {
+    40% {
+      transform: 
+        translateY(-40%)
+        rotate(calc(var(--distance-sine) * 10deg)
+      );
+    }
+    50% { transform: translateY( 6%); }
+    55% { transform: translateY(-4%); }
+    60% { transform: translateY( 2%); }
+    65% { transform: translateY(-1%); }
+    70% { transform: translateY( 0%); }
+  }
+  
+  @keyframes ghost {
+    8% {
+      opacity: 0;
+      transform: translateY(0); 
+    }
+    40% {
+      opacity: 0.25;
+      transform: 
+        translateY(-30%)
+        rotate(calc(var(--distance-sine) * -10deg)
+      ); 
+    }
+    60%, 100% {
+      opacity: 0;
+      transform: translateY(-200%);
+    }
+  }
+}
+
+.headline--rock {
+  .char {
+    --name: rock;
+    --dur: 2s;
+    --td: ease-in-out;
+    
+    transform-origin: 0 100%;
+  }
+  
+  @keyframes rock {
+    0%, 100% { transform: rotate(-10deg); }
+    50% { transform: rotate(-18deg); }
+  }
+}
+
+.headline--sail {
+  .word {
+    --dur: 5s;
+    
+    &:before,
+    &:after {
+      animation: wave var(--dur) linear infinite;
+      background-image: 
+        radial-gradient(
+          circle at 20px -30px,
+          transparent 40px,
+          var(--color) 41px
+        );
+      background-repeat: repeat-x;
+      background-size: 40px 100%;
+      content: '';
+      height: 150%;
+      left: 0;
+      position: absolute;
+      top: 90%;
+      width: 200%;
+      z-index: 2;
+    }  
+    
+    &:after {
+      animation-duration: calc(var(--dur) * 1.4);
+      opacity: 0.8;
+      top: 70%;
+    }
+  }
+  
+  .char {
+    --name: sail;
+    --del: calc(var(--char-index) * -0.15s);
+    --tf: linear;
+  }
+  
+  @keyframes sail {
+    25% { transform: rotate(-1deg) translateY(2%); }
+    50% { transform: rotate(0) translateY(0); }
+    75% { transform: rotate(1deg) translateY(1%); }
+  }
+  
+  @keyframes wave {
+    to { transform: translateX(-200px); }
+  }
+}
+
+.headline--shiver {
+  .word {
+    --name: shiver;
+    --dur: 3s;
+    --td: linear;
+  }
+  
+  .char {
+    --name: shiver-letter;
+    --del: calc(var(--char-index) * -0.0125s);
+    --dur: 140ms;
+    --td: linear;
+  }
+  
+  @keyframes shiver {
+     1% { transform: translateX( 2%); }
+     2% { transform: translateX(-2%); }
+     3% { transform: translateX( 3%); }
+     4% { transform: translateX(-3%); }
+     5% { transform: translateX( 4%); }
+     6% { transform: translateX(-4%); }
+     7% { transform: translateX( 3%); }
+     8% { transform: translateX(-3%); }
+     9% { transform: translateX( 2%); }
+    10% { transform: translateX(-2%); }
+    11% { transform: translateX( 1%); }
+    12% { transform: translateX( 0%); }
+  }
+
+  @keyframes shiver-letter {
+    25% { transform: translateY( 1%); }
+    50% {
+      transform: translate(
+        calc(var(--distance-percent) * 1%),
+        calc(var(--distance-percent) * 1%)
+      );
+    }
+    75% { transform: translateY( 1%); }
+  }
+}
+
+.headline--yell {
+  .char {
+    --name: yell;
+    --dur: 3s;
+    --tf: ease;
+    
+    transform-origin: 50% 100%;
+  }
+  
+  @keyframes yell {
+    3% {
+      transform:
+        scale(calc(1 * var(--distance-percent) + 1.5)) 
+        rotate(calc(15deg * var(--distance-sine)))
+        translateY(-10%);
+    }
+    6% {
+      transform:
+        scale(calc(1 * var(--distance-percent) + 1.2)) 
+        rotate(calc(15deg * var(--distance-sine)))
+        translateY(-10%);
+    }
+    12% {
+      transform:
+        scale(calc(1 * var(--distance-percent) + 1.5)) 
+        rotate(calc(15deg * var(--distance-sine)))
+        translateY(-10%);
+    }
+    18% { transform: scaleY(1) translateY(-2%); }
+    25% { transform: scaleY(0.98); }
+    50% { transform: scaleY(1); }
+    75% { transform: scale(0.98); }
+  }
+}
