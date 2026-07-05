@@ -6,12 +6,6 @@
     "module": "esnext",
     "types": ["vite/client"],
     "skipLibCheck": true,
-    "ignoreDeprecations": "5.0",
-    "baseUrl": ".",
-    "paths": {
-      "better-auth/react": ["./node_modules/better-auth/dist/client/react/index.d.mts"],
-      "better-auth/client/plugins": ["./node_modules/better-auth/dist/client/plugins/index.d.mts"]
-    },
 
     /* Bundler mode */
     "moduleResolution": "bundler",
