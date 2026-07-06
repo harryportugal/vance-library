@@ -455,7 +455,11 @@ async function seedPlans() {
 }
 
 seedPlans().then(() => {
-  app.listen(PORT, () => {
-    console.log(`[BACKEND SERVER] Running at http://localhost:${PORT}`);
-  });
+  if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+      console.log(`[BACKEND SERVER] Running at http://localhost:${PORT}`);
+    });
+  }
 });
+
+export { app };
