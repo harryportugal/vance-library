@@ -48,3 +48,5 @@ check_sizes.cjs
 .env
 .env.local
 .env.*.local
+
+.vercel
