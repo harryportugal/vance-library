@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+  <head>
   <!-- Automatic High-Performance Local Library Inject -->
   <script src="/libs/three.min.js"></script>
   <script src="/libs/GLTFLoader.js"></script>
@@ -312,6 +314,7 @@
       }
     }
     window.SplitText = SplitTextPolyfill;
+    window.SplitType = SplitTextPolyfill;
 
     // ScrollSmoother Polyfill
     window.ScrollSmoother = {
@@ -353,176 +356,6 @@
   
   
   
-  <style>
-    /* Hide scrollbars globally inside iframe */
-    ::-webkit-scrollbar {
-      display: none !important;
-    }
-    html, body {
-      -ms-overflow-style: none !important;
-      scrollbar-width: none !important;
-    }
-  </style>
-  <script>
-    // Image fallback replacer for Awwwards-style slides/images
-    window.addEventListener('error', function(e) {
-      if (e.target && e.target.tagName === 'IMG') {
-        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
-        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
-        e.target.src = PLACEHOLDER_IMAGES[idx];
-      }
-    }, true);
-
-    // SplitText Polyfill for GSAP compatibility
-    class SplitTextPolyfill {
-      constructor(element, options = {}) {
-        this.elements = [];
-        if (typeof element === 'string') {
-          this.elements = Array.from(document.querySelectorAll(element));
-        } else if (element.length !== undefined && !element.nodeType) {
-          this.elements = Array.from(element);
-        } else if (element) {
-          this.elements = [element];
-        }
-        
-        this.options = options;
-        this.type = options.type || "words,chars";
-        this.chars = [];
-        this.words = [];
-        this.lines = [];
-        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
-        this.split();
-      }
-      
-      split() {
-        const types = this.type.split(',').map(t => t.trim());
-        const wantChars = types.includes('chars');
-        const wantWords = types.includes('words');
-        const wantLines = types.includes('lines');
-        
-        this.elements.forEach(el => {
-          let text = el.textContent || "";
-          el.innerHTML = "";
-          
-          let words = text.split(/(\s+)/).filter(w => w.length > 0);
-          let wordElements = [];
-          let charElements = [];
-          
-          words.forEach(w => {
-            if (/\s+/.test(w)) {
-              el.appendChild(document.createTextNode(w));
-              return;
-            }
-            let wordSpan = document.createElement('span');
-            wordSpan.style.display = 'inline-block';
-            wordSpan.style.whiteSpace = 'nowrap';
-            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
-            
-            if (wantChars) {
-              Array.from(w).forEach(c => {
-                let charSpan = document.createElement('span');
-                charSpan.style.display = 'inline-block';
-                charSpan.textContent = c;
-                if (this.options.charsClass) charSpan.className = this.options.charsClass;
-                wordSpan.appendChild(charSpan);
-                charElements.push(charSpan);
-              });
-            } else {
-              wordSpan.textContent = w;
-            }
-            
-            el.appendChild(wordSpan);
-            wordElements.push(wordSpan);
-          });
-          
-          this.chars = this.chars.concat(charElements);
-          this.words = this.words.concat(wordElements);
-          
-          if (wantLines) {
-            let currentLine = [];
-            let lastTop = -1;
-            wordElements.forEach(span => {
-              let rect = span.getBoundingClientRect();
-              let top = rect.top;
-              if (lastTop === -1) {
-                lastTop = top;
-                currentLine.push(span);
-              } else if (Math.abs(top - lastTop) > 6) {
-                let lineSpan = document.createElement('span');
-                lineSpan.style.display = 'block';
-                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
-                currentLine.forEach(w => {
-                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
-                  lineSpan.appendChild(w);
-                });
-                this.lines.push(lineSpan);
-                currentLine = [span];
-                lastTop = top;
-              } else {
-                currentLine.push(span);
-              }
-            });
-            if (currentLine.length > 0) {
-              let lineSpan = document.createElement('span');
-              lineSpan.style.display = 'block';
-              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
-              currentLine.forEach(w => {
-                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
-                lineSpan.appendChild(w);
-              });
-              this.lines.push(lineSpan);
-            }
-          }
-        });
-      }
-      
-      revert() {
-        this.originalContent.forEach(item => {
-          item.el.innerHTML = item.html;
-        });
-      }
-    }
-    window.SplitText = SplitTextPolyfill;
-
-    // ScrollSmoother Polyfill
-    window.ScrollSmoother = {
-      create: function(options) {
-        console.log("Mock ScrollSmoother using Lenis.");
-        const lenis = new Lenis();
-        function raf(time) {
-          lenis.raf(time);
-          requestAnimationFrame(raf);
-        }
-        requestAnimationFrame(raf);
-        return {
-          smooth: () => lenis,
-          scrollTop: () => lenis.scroll,
-          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
-          paused: (state) => {
-            if (state === undefined) return !lenis.options.enabled;
-            if (state) lenis.stop(); else lenis.start();
-          },
-          kill: () => lenis.destroy()
-        };
-      }
-    };
-
-    // Dummy premium GSAP registers
-    if (window.gsap) {
-      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
-      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
-      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
-    }
-  </script>
-
-  <!-- Automatic High-Performance Library CDN Inject -->
-  
-  
-  
-  
-  
-  
-  
   
   <style>
     /* Hide scrollbars globally inside iframe */
@@ -654,6 +487,7 @@
       }
     }
     window.SplitText = SplitTextPolyfill;
+    window.SplitType = SplitTextPolyfill;
 
     // ScrollSmoother Polyfill
     window.ScrollSmoother = {
@@ -685,4 +519,1565 @@
       gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
     }
   </script>
-<meta charSet="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="preload" href="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/media/797e433ab948586e-s.p.0r6juujl39pe6.woff2" as="font" crossorigin="" type="font/woff2"/><link rel="preload" href="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/media/caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2" as="font" crossorigin="" type="font/woff2"/><link rel="stylesheet" href="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0gylucv_x60n3.css" data-precedence="next"/><link rel="preload" as="script" fetchPriority="low" href="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0a1gboz92241g.js"/><script src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0bb4r11wys6fk.js" async=""></script><script src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/3peubv2924kx4.js" async=""></script><script src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/turbopack-1zq10kyo3q6b-.js" async=""></script><script src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js" async=""></script><script src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js" async=""></script><script src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/1o2os_5yen8a9.js" async=""></script><script src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2ae_pxw-xgayk.js" async=""></script><meta name="next-size-adjust" content=""/><title>Create Next App</title><meta name="description" content="Generated by create next app"/><link rel="icon" href="/favicon.ico?favicon.2vob68tjqpejf.ico" sizes="256x256" type="image/x-icon"/><script src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0cz1d0mv5g_q7.js" noModule=""></script></head><body class="geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li5zG__variable"><div hidden=""><!--$--><!--/$--></div><div class="sceneRoot"><div style="position:relative;width:100%;height:100%;overflow:hidden;pointer-events:auto"><div style="width:100%;height:100%"><canvas style="display:block"></canvas></div></div><div class="whiteEdgeGradient" aria-hidden="true"></div><div class="customCursor" aria-hidden="true"></div></div><!--$--><!--/$--><nav class="bottomNav" aria-label="Pages"><a class="isActive" href="/">Tube</a><a class="" href="/codrop">Sphere</a><a class="" href="/rubens">Rubens</a></nav><script src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0a1gboz92241g.js" id="_R_" async=""></script><script>(self.__next_f=self.__next_f||[]).push([0])</script><script>self.__next_f.push([1,"1:\"$Sreact.fragment\"\n2:I[47798,[\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js\",\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js\"],\"GlobalClickSound\"]\n3:I[39756,[\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js\",\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js\"],\"default\"]\n4:I[37457,[\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js\",\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js\"],\"default\"]\n5:I[34323,[\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js\",\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js\"],\"BottomNav\"]\n6:I[7544,[\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js\",\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js\",\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/1o2os_5yen8a9.js\",\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2ae_pxw-xgayk.js\"],\"FiberScene\"]\n7:I[97367,[\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js\",\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js\"],\"OutletBoundary\"]\n8:\"$Sreact.suspense\"\na:I[97367,[\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js\",\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js\"],\"ViewportBoundary\"]\nc:I[97367,[\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js\",\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js\"],\"MetadataBoundary\"]\ne:I[68027,[\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js\",\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js\"],\"default\",1]\n:HL[\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0gylucv_x60n3.css\",\"style\"]\n:HL[\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/media/797e433ab948586e-s.p.0r6juujl39pe6.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n:HL[\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/media/caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2\",\"font\",{\"crossOrigin\":\"\",\"type\":\"font/woff2\"}]\n"])</script><script>self.__next_f.push([1,"0:{\"P\":null,\"c\":[\"\",\"\"],\"q\":\"\",\"i\":false,\"f\":[[[\"\",{\"children\":[\"__PAGE__\",{}]},\"$undefined\",\"$undefined\",16],[[\"$\",\"$1\",\"c\",{\"children\":[[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0gylucv_x60n3.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-0\",{\"src\":\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-1\",{\"src\":\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js\",\"async\":true,\"nonce\":\"$undefined\"}]],[\"$\",\"html\",null,{\"lang\":\"en\",\"children\":[\"$\",\"body\",null,{\"className\":\"geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li5zG__variable\",\"children\":[[\"$\",\"$L2\",null,{}],[\"$\",\"$L3\",null,{\"parallelRouterKey\":\"children\",\"error\":\"$undefined\",\"errorStyles\":\"$undefined\",\"errorScripts\":\"$undefined\",\"template\":[\"$\",\"$L4\",null,{}],\"templateStyles\":\"$undefined\",\"templateScripts\":\"$undefined\",\"notFound\":[[[\"$\",\"title\",null,{\"children\":\"404: This page could not be found.\"}],[\"$\",\"div\",null,{\"style\":{\"fontFamily\":\"system-ui,\\\"Segoe UI\\\",Roboto,Helvetica,Arial,sans-serif,\\\"Apple Color Emoji\\\",\\\"Segoe UI Emoji\\\"\",\"height\":\"100vh\",\"textAlign\":\"center\",\"display\":\"flex\",\"flexDirection\":\"column\",\"alignItems\":\"center\",\"justifyContent\":\"center\"},\"children\":[\"$\",\"div\",null,{\"children\":[[\"$\",\"style\",null,{\"dangerouslySetInnerHTML\":{\"__html\":\"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}\"}}],[\"$\",\"h1\",null,{\"className\":\"next-error-h1\",\"style\":{\"display\":\"inline-block\",\"margin\":\"0 20px 0 0\",\"padding\":\"0 23px 0 0\",\"fontSize\":24,\"fontWeight\":500,\"verticalAlign\":\"top\",\"lineHeight\":\"49px\"},\"children\":404}],[\"$\",\"div\",null,{\"style\":{\"display\":\"inline-block\"},\"children\":[\"$\",\"h2\",null,{\"style\":{\"fontSize\":14,\"fontWeight\":400,\"lineHeight\":\"49px\",\"margin\":0},\"children\":\"This page could not be found.\"}]}]]}]}]],[]],\"forbidden\":\"$undefined\",\"unauthorized\":\"$undefined\"}],[\"$\",\"$L5\",null,{}]]}]}]]}],{\"children\":[[\"$\",\"$1\",\"c\",{\"children\":[[\"$\",\"$L6\",null,{}],[[\"$\",\"script\",\"script-0\",{\"src\":\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/1o2os_5yen8a9.js\",\"async\":true,\"nonce\":\"$undefined\"}],[\"$\",\"script\",\"script-1\",{\"src\":\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2ae_pxw-xgayk.js\",\"async\":true,\"nonce\":\"$undefined\"}]],[\"$\",\"$L7\",null,{\"children\":[\"$\",\"$8\",null,{\"name\":\"Next.MetadataOutlet\",\"children\":\"$@9\"}]}]]}],{},null,false,null]},null,false,null],[\"$\",\"$1\",\"h\",{\"children\":[null,[\"$\",\"$La\",null,{\"children\":\"$Lb\"}],[\"$\",\"div\",null,{\"hidden\":true,\"children\":[\"$\",\"$Lc\",null,{\"children\":[\"$\",\"$8\",null,{\"name\":\"Next.Metadata\",\"children\":\"$Ld\"}]}]}],[\"$\",\"meta\",null,{\"name\":\"next-size-adjust\",\"content\":\"\"}]]}],false]],\"m\":\"$undefined\",\"G\":[\"$e\",[[\"$\",\"link\",\"0\",{\"rel\":\"stylesheet\",\"href\":\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0gylucv_x60n3.css\",\"precedence\":\"next\",\"crossOrigin\":\"$undefined\",\"nonce\":\"$undefined\"}]]],\"S\":true,\"h\":null,\"s\":\"$undefined\",\"l\":\"$undefined\",\"p\":\"$undefined\",\"d\":\"$undefined\",\"b\":\"W7UbMtV76XzY290uWLOjs\"}\n"])</script><script>self.__next_f.push([1,"b:[[\"$\",\"meta\",\"0\",{\"charSet\":\"utf-8\"}],[\"$\",\"meta\",\"1\",{\"name\":\"viewport\",\"content\":\"width=device-width, initial-scale=1\"}]]\n"])</script><script>self.__next_f.push([1,"f:I[27201,[\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js\",\"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js\"],\"IconMark\"]\n9:null\nd:[[\"$\",\"title\",\"0\",{\"children\":\"Create Next App\"}],[\"$\",\"meta\",\"1\",{\"name\":\"description\",\"content\":\"Generated by create next app\"}],[\"$\",\"link\",\"2\",{\"rel\":\"icon\",\"href\":\"/favicon.ico?favicon.2vob68tjqpejf.ico\",\"sizes\":\"256x256\",\"type\":\"image/x-icon\"}],[\"$\",\"$Lf\",\"3\",{}]]\n"])</script></body></html>
+
+    <!-- Automatic High-Performance Local Library Inject -->
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <style>
+      /* Hide scrollbars globally inside iframe */
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      html,
+      body {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+      }
+    </style>
+    <script>
+      // Image fallback replacer for Awwwards-style slides/images
+      window.addEventListener(
+        "error",
+        function (e) {
+          if (e.target && e.target.tagName === "IMG") {
+            const PLACEHOLDER_IMAGES = [
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80",
+            ];
+            const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+            e.target.src = PLACEHOLDER_IMAGES[idx];
+          }
+        },
+        true
+      );
+
+      // SplitText Polyfill for GSAP compatibility
+      class SplitTextPolyfill {
+        constructor(element, options = {}) {
+          this.elements = [];
+          if (typeof element === "string") {
+            this.elements = Array.from(document.querySelectorAll(element));
+          } else if (element.length !== undefined && !element.nodeType) {
+            this.elements = Array.from(element);
+          } else if (element) {
+            this.elements = [element];
+          }
+
+          this.options = options;
+          this.type = options.type || "words,chars";
+          this.chars = [];
+          this.words = [];
+          this.lines = [];
+          this.originalContent = this.elements.map((el) => ({
+            el,
+            html: el.innerHTML,
+          }));
+          this.split();
+        }
+
+        split() {
+          const types = this.type.split(",").map((t) => t.trim());
+          const wantChars = types.includes("chars");
+          const wantWords = types.includes("words");
+          const wantLines = types.includes("lines");
+
+          this.elements.forEach((el) => {
+            let text = el.textContent || "";
+            el.innerHTML = "";
+
+            let words = text.split(/(\s+)/).filter((w) => w.length > 0);
+            let wordElements = [];
+            let charElements = [];
+
+            words.forEach((w) => {
+              if (/\s+/.test(w)) {
+                el.appendChild(document.createTextNode(w));
+                return;
+              }
+              let wordSpan = document.createElement("span");
+              wordSpan.style.display = "inline-block";
+              wordSpan.style.whiteSpace = "nowrap";
+              if (this.options.wordsClass)
+                wordSpan.className = this.options.wordsClass;
+
+              if (wantChars) {
+                Array.from(w).forEach((c) => {
+                  let charSpan = document.createElement("span");
+                  charSpan.style.display = "inline-block";
+                  charSpan.textContent = c;
+                  if (this.options.charsClass)
+                    charSpan.className = this.options.charsClass;
+                  wordSpan.appendChild(charSpan);
+                  charElements.push(charSpan);
+                });
+              } else {
+                wordSpan.textContent = w;
+              }
+
+              el.appendChild(wordSpan);
+              wordElements.push(wordSpan);
+            });
+
+            this.chars = this.chars.concat(charElements);
+            this.words = this.words.concat(wordElements);
+
+            if (wantLines) {
+              let currentLine = [];
+              let lastTop = -1;
+              wordElements.forEach((span) => {
+                let rect = span.getBoundingClientRect();
+                let top = rect.top;
+                if (lastTop === -1) {
+                  lastTop = top;
+                  currentLine.push(span);
+                } else if (Math.abs(top - lastTop) > 6) {
+                  let lineSpan = document.createElement("span");
+                  lineSpan.style.display = "block";
+                  if (this.options.linesClass)
+                    lineSpan.className = this.options.linesClass;
+                  currentLine.forEach((w) => {
+                    if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                    lineSpan.appendChild(w);
+                  });
+                  this.lines.push(lineSpan);
+                  currentLine = [span];
+                  lastTop = top;
+                } else {
+                  currentLine.push(span);
+                }
+              });
+              if (currentLine.length > 0) {
+                let lineSpan = document.createElement("span");
+                lineSpan.style.display = "block";
+                if (this.options.linesClass)
+                  lineSpan.className = this.options.linesClass;
+                currentLine.forEach((w) => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+              }
+            }
+          });
+        }
+
+        revert() {
+          this.originalContent.forEach((item) => {
+            item.el.innerHTML = item.html;
+          });
+        }
+      }
+      window.SplitText = SplitTextPolyfill;
+      window.SplitType = SplitTextPolyfill;
+
+      // ScrollSmoother Polyfill
+      window.ScrollSmoother = {
+        create: function (options) {
+          console.log("Mock ScrollSmoother using Lenis.");
+          const lenis = new Lenis();
+          function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+          }
+          requestAnimationFrame(raf);
+          return {
+            smooth: () => lenis,
+            scrollTop: () => lenis.scroll,
+            scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+            paused: (state) => {
+              if (state === undefined) return !lenis.options.enabled;
+              if (state) lenis.stop();
+              else lenis.start();
+            },
+            kill: () => lenis.destroy(),
+          };
+        },
+      };
+
+      // Dummy premium GSAP registers
+      if (window.gsap) {
+        gsap.registerPlugin({
+          name: "drawSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "morphSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "scrambleText",
+          init() {
+            return true;
+          },
+        });
+      }
+    </script>
+
+    <!-- Automatic High-Performance Local Library Inject -->
+
+    <style>
+      /* Hide scrollbars globally inside iframe */
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      html,
+      body {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+      }
+    </style>
+    <script>
+      // Image fallback replacer for Awwwards-style slides/images
+      window.addEventListener(
+        "error",
+        function (e) {
+          if (e.target && e.target.tagName === "IMG") {
+            const PLACEHOLDER_IMAGES = [
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80",
+            ];
+            const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+            e.target.src = PLACEHOLDER_IMAGES[idx];
+          }
+        },
+        true
+      );
+
+      // SplitText Polyfill for GSAP compatibility
+      class SplitTextPolyfill {
+        constructor(element, options = {}) {
+          this.elements = [];
+          if (typeof element === "string") {
+            this.elements = Array.from(document.querySelectorAll(element));
+          } else if (element.length !== undefined && !element.nodeType) {
+            this.elements = Array.from(element);
+          } else if (element) {
+            this.elements = [element];
+          }
+
+          this.options = options;
+          this.type = options.type || "words,chars";
+          this.chars = [];
+          this.words = [];
+          this.lines = [];
+          this.originalContent = this.elements.map((el) => ({
+            el,
+            html: el.innerHTML,
+          }));
+          this.split();
+        }
+
+        split() {
+          const types = this.type.split(",").map((t) => t.trim());
+          const wantChars = types.includes("chars");
+          const wantWords = types.includes("words");
+          const wantLines = types.includes("lines");
+
+          this.elements.forEach((el) => {
+            let text = el.textContent || "";
+            el.innerHTML = "";
+
+            let words = text.split(/(\s+)/).filter((w) => w.length > 0);
+            let wordElements = [];
+            let charElements = [];
+
+            words.forEach((w) => {
+              if (/\s+/.test(w)) {
+                el.appendChild(document.createTextNode(w));
+                return;
+              }
+              let wordSpan = document.createElement("span");
+              wordSpan.style.display = "inline-block";
+              wordSpan.style.whiteSpace = "nowrap";
+              if (this.options.wordsClass)
+                wordSpan.className = this.options.wordsClass;
+
+              if (wantChars) {
+                Array.from(w).forEach((c) => {
+                  let charSpan = document.createElement("span");
+                  charSpan.style.display = "inline-block";
+                  charSpan.textContent = c;
+                  if (this.options.charsClass)
+                    charSpan.className = this.options.charsClass;
+                  wordSpan.appendChild(charSpan);
+                  charElements.push(charSpan);
+                });
+              } else {
+                wordSpan.textContent = w;
+              }
+
+              el.appendChild(wordSpan);
+              wordElements.push(wordSpan);
+            });
+
+            this.chars = this.chars.concat(charElements);
+            this.words = this.words.concat(wordElements);
+
+            if (wantLines) {
+              let currentLine = [];
+              let lastTop = -1;
+              wordElements.forEach((span) => {
+                let rect = span.getBoundingClientRect();
+                let top = rect.top;
+                if (lastTop === -1) {
+                  lastTop = top;
+                  currentLine.push(span);
+                } else if (Math.abs(top - lastTop) > 6) {
+                  let lineSpan = document.createElement("span");
+                  lineSpan.style.display = "block";
+                  if (this.options.linesClass)
+                    lineSpan.className = this.options.linesClass;
+                  currentLine.forEach((w) => {
+                    if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                    lineSpan.appendChild(w);
+                  });
+                  this.lines.push(lineSpan);
+                  currentLine = [span];
+                  lastTop = top;
+                } else {
+                  currentLine.push(span);
+                }
+              });
+              if (currentLine.length > 0) {
+                let lineSpan = document.createElement("span");
+                lineSpan.style.display = "block";
+                if (this.options.linesClass)
+                  lineSpan.className = this.options.linesClass;
+                currentLine.forEach((w) => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+              }
+            }
+          });
+        }
+
+        revert() {
+          this.originalContent.forEach((item) => {
+            item.el.innerHTML = item.html;
+          });
+        }
+      }
+      window.SplitText = SplitTextPolyfill;
+      window.SplitType = SplitTextPolyfill;
+
+      // ScrollSmoother Polyfill
+      window.ScrollSmoother = {
+        create: function (options) {
+          console.log("Mock ScrollSmoother using Lenis.");
+          const lenis = new Lenis();
+          function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+          }
+          requestAnimationFrame(raf);
+          return {
+            smooth: () => lenis,
+            scrollTop: () => lenis.scroll,
+            scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+            paused: (state) => {
+              if (state === undefined) return !lenis.options.enabled;
+              if (state) lenis.stop();
+              else lenis.start();
+            },
+            kill: () => lenis.destroy(),
+          };
+        },
+      };
+
+      // Dummy premium GSAP registers
+      if (window.gsap) {
+        gsap.registerPlugin({
+          name: "drawSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "morphSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "scrambleText",
+          init() {
+            return true;
+          },
+        });
+      }
+    </script>
+
+    <!-- Automatic High-Performance Local Library Inject -->
+
+    <style>
+      /* Hide scrollbars globally inside iframe */
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      html,
+      body {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+      }
+    </style>
+    <script>
+      // Image fallback replacer for Awwwards-style slides/images
+      window.addEventListener(
+        "error",
+        function (e) {
+          if (e.target && e.target.tagName === "IMG") {
+            const PLACEHOLDER_IMAGES = [
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80",
+            ];
+            const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+            e.target.src = PLACEHOLDER_IMAGES[idx];
+          }
+        },
+        true
+      );
+
+      // SplitText Polyfill for GSAP compatibility
+      class SplitTextPolyfill {
+        constructor(element, options = {}) {
+          this.elements = [];
+          if (typeof element === "string") {
+            this.elements = Array.from(document.querySelectorAll(element));
+          } else if (element.length !== undefined && !element.nodeType) {
+            this.elements = Array.from(element);
+          } else if (element) {
+            this.elements = [element];
+          }
+
+          this.options = options;
+          this.type = options.type || "words,chars";
+          this.chars = [];
+          this.words = [];
+          this.lines = [];
+          this.originalContent = this.elements.map((el) => ({
+            el,
+            html: el.innerHTML,
+          }));
+          this.split();
+        }
+
+        split() {
+          const types = this.type.split(",").map((t) => t.trim());
+          const wantChars = types.includes("chars");
+          const wantWords = types.includes("words");
+          const wantLines = types.includes("lines");
+
+          this.elements.forEach((el) => {
+            let text = el.textContent || "";
+            el.innerHTML = "";
+
+            let words = text.split(/(\s+)/).filter((w) => w.length > 0);
+            let wordElements = [];
+            let charElements = [];
+
+            words.forEach((w) => {
+              if (/\s+/.test(w)) {
+                el.appendChild(document.createTextNode(w));
+                return;
+              }
+              let wordSpan = document.createElement("span");
+              wordSpan.style.display = "inline-block";
+              wordSpan.style.whiteSpace = "nowrap";
+              if (this.options.wordsClass)
+                wordSpan.className = this.options.wordsClass;
+
+              if (wantChars) {
+                Array.from(w).forEach((c) => {
+                  let charSpan = document.createElement("span");
+                  charSpan.style.display = "inline-block";
+                  charSpan.textContent = c;
+                  if (this.options.charsClass)
+                    charSpan.className = this.options.charsClass;
+                  wordSpan.appendChild(charSpan);
+                  charElements.push(charSpan);
+                });
+              } else {
+                wordSpan.textContent = w;
+              }
+
+              el.appendChild(wordSpan);
+              wordElements.push(wordSpan);
+            });
+
+            this.chars = this.chars.concat(charElements);
+            this.words = this.words.concat(wordElements);
+
+            if (wantLines) {
+              let currentLine = [];
+              let lastTop = -1;
+              wordElements.forEach((span) => {
+                let rect = span.getBoundingClientRect();
+                let top = rect.top;
+                if (lastTop === -1) {
+                  lastTop = top;
+                  currentLine.push(span);
+                } else if (Math.abs(top - lastTop) > 6) {
+                  let lineSpan = document.createElement("span");
+                  lineSpan.style.display = "block";
+                  if (this.options.linesClass)
+                    lineSpan.className = this.options.linesClass;
+                  currentLine.forEach((w) => {
+                    if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                    lineSpan.appendChild(w);
+                  });
+                  this.lines.push(lineSpan);
+                  currentLine = [span];
+                  lastTop = top;
+                } else {
+                  currentLine.push(span);
+                }
+              });
+              if (currentLine.length > 0) {
+                let lineSpan = document.createElement("span");
+                lineSpan.style.display = "block";
+                if (this.options.linesClass)
+                  lineSpan.className = this.options.linesClass;
+                currentLine.forEach((w) => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+              }
+            }
+          });
+        }
+
+        revert() {
+          this.originalContent.forEach((item) => {
+            item.el.innerHTML = item.html;
+          });
+        }
+      }
+      window.SplitText = SplitTextPolyfill;
+      window.SplitType = SplitTextPolyfill;
+
+      // ScrollSmoother Polyfill
+      window.ScrollSmoother = {
+        create: function (options) {
+          console.log("Mock ScrollSmoother using Lenis.");
+          const lenis = new Lenis();
+          function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+          }
+          requestAnimationFrame(raf);
+          return {
+            smooth: () => lenis,
+            scrollTop: () => lenis.scroll,
+            scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+            paused: (state) => {
+              if (state === undefined) return !lenis.options.enabled;
+              if (state) lenis.stop();
+              else lenis.start();
+            },
+            kill: () => lenis.destroy(),
+          };
+        },
+      };
+
+      // Dummy premium GSAP registers
+      if (window.gsap) {
+        gsap.registerPlugin({
+          name: "drawSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "morphSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "scrambleText",
+          init() {
+            return true;
+          },
+        });
+      }
+    </script>
+
+    <!-- Automatic High-Performance Local Library Inject -->
+
+    <style>
+      /* Hide scrollbars globally inside iframe */
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      html,
+      body {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+      }
+    </style>
+    <script>
+      // Image fallback replacer for Awwwards-style slides/images
+      window.addEventListener(
+        "error",
+        function (e) {
+          if (e.target && e.target.tagName === "IMG") {
+            const PLACEHOLDER_IMAGES = [
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80",
+            ];
+            const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+            e.target.src = PLACEHOLDER_IMAGES[idx];
+          }
+        },
+        true
+      );
+
+      // SplitText Polyfill for GSAP compatibility
+      class SplitTextPolyfill {
+        constructor(element, options = {}) {
+          this.elements = [];
+          if (typeof element === "string") {
+            this.elements = Array.from(document.querySelectorAll(element));
+          } else if (element.length !== undefined && !element.nodeType) {
+            this.elements = Array.from(element);
+          } else if (element) {
+            this.elements = [element];
+          }
+
+          this.options = options;
+          this.type = options.type || "words,chars";
+          this.chars = [];
+          this.words = [];
+          this.lines = [];
+          this.originalContent = this.elements.map((el) => ({
+            el,
+            html: el.innerHTML,
+          }));
+          this.split();
+        }
+
+        split() {
+          const types = this.type.split(",").map((t) => t.trim());
+          const wantChars = types.includes("chars");
+          const wantWords = types.includes("words");
+          const wantLines = types.includes("lines");
+
+          this.elements.forEach((el) => {
+            let text = el.textContent || "";
+            el.innerHTML = "";
+
+            let words = text.split(/(\s+)/).filter((w) => w.length > 0);
+            let wordElements = [];
+            let charElements = [];
+
+            words.forEach((w) => {
+              if (/\s+/.test(w)) {
+                el.appendChild(document.createTextNode(w));
+                return;
+              }
+              let wordSpan = document.createElement("span");
+              wordSpan.style.display = "inline-block";
+              wordSpan.style.whiteSpace = "nowrap";
+              if (this.options.wordsClass)
+                wordSpan.className = this.options.wordsClass;
+
+              if (wantChars) {
+                Array.from(w).forEach((c) => {
+                  let charSpan = document.createElement("span");
+                  charSpan.style.display = "inline-block";
+                  charSpan.textContent = c;
+                  if (this.options.charsClass)
+                    charSpan.className = this.options.charsClass;
+                  wordSpan.appendChild(charSpan);
+                  charElements.push(charSpan);
+                });
+              } else {
+                wordSpan.textContent = w;
+              }
+
+              el.appendChild(wordSpan);
+              wordElements.push(wordSpan);
+            });
+
+            this.chars = this.chars.concat(charElements);
+            this.words = this.words.concat(wordElements);
+
+            if (wantLines) {
+              let currentLine = [];
+              let lastTop = -1;
+              wordElements.forEach((span) => {
+                let rect = span.getBoundingClientRect();
+                let top = rect.top;
+                if (lastTop === -1) {
+                  lastTop = top;
+                  currentLine.push(span);
+                } else if (Math.abs(top - lastTop) > 6) {
+                  let lineSpan = document.createElement("span");
+                  lineSpan.style.display = "block";
+                  if (this.options.linesClass)
+                    lineSpan.className = this.options.linesClass;
+                  currentLine.forEach((w) => {
+                    if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                    lineSpan.appendChild(w);
+                  });
+                  this.lines.push(lineSpan);
+                  currentLine = [span];
+                  lastTop = top;
+                } else {
+                  currentLine.push(span);
+                }
+              });
+              if (currentLine.length > 0) {
+                let lineSpan = document.createElement("span");
+                lineSpan.style.display = "block";
+                if (this.options.linesClass)
+                  lineSpan.className = this.options.linesClass;
+                currentLine.forEach((w) => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+              }
+            }
+          });
+        }
+
+        revert() {
+          this.originalContent.forEach((item) => {
+            item.el.innerHTML = item.html;
+          });
+        }
+      }
+      window.SplitText = SplitTextPolyfill;
+      window.SplitType = SplitTextPolyfill;
+
+      // ScrollSmoother Polyfill
+      window.ScrollSmoother = {
+        create: function (options) {
+          console.log("Mock ScrollSmoother using Lenis.");
+          const lenis = new Lenis();
+          function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+          }
+          requestAnimationFrame(raf);
+          return {
+            smooth: () => lenis,
+            scrollTop: () => lenis.scroll,
+            scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+            paused: (state) => {
+              if (state === undefined) return !lenis.options.enabled;
+              if (state) lenis.stop();
+              else lenis.start();
+            },
+            kill: () => lenis.destroy(),
+          };
+        },
+      };
+
+      // Dummy premium GSAP registers
+      if (window.gsap) {
+        gsap.registerPlugin({
+          name: "drawSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "morphSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "scrambleText",
+          init() {
+            return true;
+          },
+        });
+      }
+    </script>
+
+    <!-- Automatic High-Performance Local Library Inject -->
+
+    <style>
+      /* Hide scrollbars globally inside iframe */
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      html,
+      body {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+      }
+    </style>
+    <script>
+      // Image fallback replacer for Awwwards-style slides/images
+      window.addEventListener(
+        "error",
+        function (e) {
+          if (e.target && e.target.tagName === "IMG") {
+            const PLACEHOLDER_IMAGES = [
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80",
+            ];
+            const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+            e.target.src = PLACEHOLDER_IMAGES[idx];
+          }
+        },
+        true
+      );
+
+      // SplitText Polyfill for GSAP compatibility
+      class SplitTextPolyfill {
+        constructor(element, options = {}) {
+          this.elements = [];
+          if (typeof element === "string") {
+            this.elements = Array.from(document.querySelectorAll(element));
+          } else if (element.length !== undefined && !element.nodeType) {
+            this.elements = Array.from(element);
+          } else if (element) {
+            this.elements = [element];
+          }
+
+          this.options = options;
+          this.type = options.type || "words,chars";
+          this.chars = [];
+          this.words = [];
+          this.lines = [];
+          this.originalContent = this.elements.map((el) => ({
+            el,
+            html: el.innerHTML,
+          }));
+          this.split();
+        }
+
+        split() {
+          const types = this.type.split(",").map((t) => t.trim());
+          const wantChars = types.includes("chars");
+          const wantWords = types.includes("words");
+          const wantLines = types.includes("lines");
+
+          this.elements.forEach((el) => {
+            let text = el.textContent || "";
+            el.innerHTML = "";
+
+            let words = text.split(/(\s+)/).filter((w) => w.length > 0);
+            let wordElements = [];
+            let charElements = [];
+
+            words.forEach((w) => {
+              if (/\s+/.test(w)) {
+                el.appendChild(document.createTextNode(w));
+                return;
+              }
+              let wordSpan = document.createElement("span");
+              wordSpan.style.display = "inline-block";
+              wordSpan.style.whiteSpace = "nowrap";
+              if (this.options.wordsClass)
+                wordSpan.className = this.options.wordsClass;
+
+              if (wantChars) {
+                Array.from(w).forEach((c) => {
+                  let charSpan = document.createElement("span");
+                  charSpan.style.display = "inline-block";
+                  charSpan.textContent = c;
+                  if (this.options.charsClass)
+                    charSpan.className = this.options.charsClass;
+                  wordSpan.appendChild(charSpan);
+                  charElements.push(charSpan);
+                });
+              } else {
+                wordSpan.textContent = w;
+              }
+
+              el.appendChild(wordSpan);
+              wordElements.push(wordSpan);
+            });
+
+            this.chars = this.chars.concat(charElements);
+            this.words = this.words.concat(wordElements);
+
+            if (wantLines) {
+              let currentLine = [];
+              let lastTop = -1;
+              wordElements.forEach((span) => {
+                let rect = span.getBoundingClientRect();
+                let top = rect.top;
+                if (lastTop === -1) {
+                  lastTop = top;
+                  currentLine.push(span);
+                } else if (Math.abs(top - lastTop) > 6) {
+                  let lineSpan = document.createElement("span");
+                  lineSpan.style.display = "block";
+                  if (this.options.linesClass)
+                    lineSpan.className = this.options.linesClass;
+                  currentLine.forEach((w) => {
+                    if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                    lineSpan.appendChild(w);
+                  });
+                  this.lines.push(lineSpan);
+                  currentLine = [span];
+                  lastTop = top;
+                } else {
+                  currentLine.push(span);
+                }
+              });
+              if (currentLine.length > 0) {
+                let lineSpan = document.createElement("span");
+                lineSpan.style.display = "block";
+                if (this.options.linesClass)
+                  lineSpan.className = this.options.linesClass;
+                currentLine.forEach((w) => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+              }
+            }
+          });
+        }
+
+        revert() {
+          this.originalContent.forEach((item) => {
+            item.el.innerHTML = item.html;
+          });
+        }
+      }
+      window.SplitText = SplitTextPolyfill;
+
+      // ScrollSmoother Polyfill
+      window.ScrollSmoother = {
+        create: function (options) {
+          console.log("Mock ScrollSmoother using Lenis.");
+          const lenis = new Lenis();
+          function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+          }
+          requestAnimationFrame(raf);
+          return {
+            smooth: () => lenis,
+            scrollTop: () => lenis.scroll,
+            scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+            paused: (state) => {
+              if (state === undefined) return !lenis.options.enabled;
+              if (state) lenis.stop();
+              else lenis.start();
+            },
+            kill: () => lenis.destroy(),
+          };
+        },
+      };
+
+      // Dummy premium GSAP registers
+      if (window.gsap) {
+        gsap.registerPlugin({
+          name: "drawSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "morphSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "scrambleText",
+          init() {
+            return true;
+          },
+        });
+      }
+    </script>
+
+    <!-- Automatic High-Performance Local Library Inject -->
+
+    <style>
+      /* Hide scrollbars globally inside iframe */
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      html,
+      body {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+      }
+    </style>
+    <script>
+      // Image fallback replacer for Awwwards-style slides/images
+      window.addEventListener(
+        "error",
+        function (e) {
+          if (e.target && e.target.tagName === "IMG") {
+            const PLACEHOLDER_IMAGES = [
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80",
+            ];
+            const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+            e.target.src = PLACEHOLDER_IMAGES[idx];
+          }
+        },
+        true
+      );
+
+      // SplitText Polyfill for GSAP compatibility
+      class SplitTextPolyfill {
+        constructor(element, options = {}) {
+          this.elements = [];
+          if (typeof element === "string") {
+            this.elements = Array.from(document.querySelectorAll(element));
+          } else if (element.length !== undefined && !element.nodeType) {
+            this.elements = Array.from(element);
+          } else if (element) {
+            this.elements = [element];
+          }
+
+          this.options = options;
+          this.type = options.type || "words,chars";
+          this.chars = [];
+          this.words = [];
+          this.lines = [];
+          this.originalContent = this.elements.map((el) => ({
+            el,
+            html: el.innerHTML,
+          }));
+          this.split();
+        }
+
+        split() {
+          const types = this.type.split(",").map((t) => t.trim());
+          const wantChars = types.includes("chars");
+          const wantWords = types.includes("words");
+          const wantLines = types.includes("lines");
+
+          this.elements.forEach((el) => {
+            let text = el.textContent || "";
+            el.innerHTML = "";
+
+            let words = text.split(/(\s+)/).filter((w) => w.length > 0);
+            let wordElements = [];
+            let charElements = [];
+
+            words.forEach((w) => {
+              if (/\s+/.test(w)) {
+                el.appendChild(document.createTextNode(w));
+                return;
+              }
+              let wordSpan = document.createElement("span");
+              wordSpan.style.display = "inline-block";
+              wordSpan.style.whiteSpace = "nowrap";
+              if (this.options.wordsClass)
+                wordSpan.className = this.options.wordsClass;
+
+              if (wantChars) {
+                Array.from(w).forEach((c) => {
+                  let charSpan = document.createElement("span");
+                  charSpan.style.display = "inline-block";
+                  charSpan.textContent = c;
+                  if (this.options.charsClass)
+                    charSpan.className = this.options.charsClass;
+                  wordSpan.appendChild(charSpan);
+                  charElements.push(charSpan);
+                });
+              } else {
+                wordSpan.textContent = w;
+              }
+
+              el.appendChild(wordSpan);
+              wordElements.push(wordSpan);
+            });
+
+            this.chars = this.chars.concat(charElements);
+            this.words = this.words.concat(wordElements);
+
+            if (wantLines) {
+              let currentLine = [];
+              let lastTop = -1;
+              wordElements.forEach((span) => {
+                let rect = span.getBoundingClientRect();
+                let top = rect.top;
+                if (lastTop === -1) {
+                  lastTop = top;
+                  currentLine.push(span);
+                } else if (Math.abs(top - lastTop) > 6) {
+                  let lineSpan = document.createElement("span");
+                  lineSpan.style.display = "block";
+                  if (this.options.linesClass)
+                    lineSpan.className = this.options.linesClass;
+                  currentLine.forEach((w) => {
+                    if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                    lineSpan.appendChild(w);
+                  });
+                  this.lines.push(lineSpan);
+                  currentLine = [span];
+                  lastTop = top;
+                } else {
+                  currentLine.push(span);
+                }
+              });
+              if (currentLine.length > 0) {
+                let lineSpan = document.createElement("span");
+                lineSpan.style.display = "block";
+                if (this.options.linesClass)
+                  lineSpan.className = this.options.linesClass;
+                currentLine.forEach((w) => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+              }
+            }
+          });
+        }
+
+        revert() {
+          this.originalContent.forEach((item) => {
+            item.el.innerHTML = item.html;
+          });
+        }
+      }
+      window.SplitText = SplitTextPolyfill;
+
+      // ScrollSmoother Polyfill
+      window.ScrollSmoother = {
+        create: function (options) {
+          console.log("Mock ScrollSmoother using Lenis.");
+          const lenis = new Lenis();
+          function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+          }
+          requestAnimationFrame(raf);
+          return {
+            smooth: () => lenis,
+            scrollTop: () => lenis.scroll,
+            scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+            paused: (state) => {
+              if (state === undefined) return !lenis.options.enabled;
+              if (state) lenis.stop();
+              else lenis.start();
+            },
+            kill: () => lenis.destroy(),
+          };
+        },
+      };
+
+      // Dummy premium GSAP registers
+      if (window.gsap) {
+        gsap.registerPlugin({
+          name: "drawSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "morphSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "scrambleText",
+          init() {
+            return true;
+          },
+        });
+      }
+    </script>
+
+    <!-- Automatic High-Performance Library CDN Inject -->
+
+    <style>
+      /* Hide scrollbars globally inside iframe */
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      html,
+      body {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+      }
+    </style>
+    <script>
+      // Image fallback replacer for Awwwards-style slides/images
+      window.addEventListener(
+        "error",
+        function (e) {
+          if (e.target && e.target.tagName === "IMG") {
+            const PLACEHOLDER_IMAGES = [
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80",
+            ];
+            const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+            e.target.src = PLACEHOLDER_IMAGES[idx];
+          }
+        },
+        true
+      );
+
+      // SplitText Polyfill for GSAP compatibility
+      class SplitTextPolyfill {
+        constructor(element, options = {}) {
+          this.elements = [];
+          if (typeof element === "string") {
+            this.elements = Array.from(document.querySelectorAll(element));
+          } else if (element.length !== undefined && !element.nodeType) {
+            this.elements = Array.from(element);
+          } else if (element) {
+            this.elements = [element];
+          }
+
+          this.options = options;
+          this.type = options.type || "words,chars";
+          this.chars = [];
+          this.words = [];
+          this.lines = [];
+          this.originalContent = this.elements.map((el) => ({
+            el,
+            html: el.innerHTML,
+          }));
+          this.split();
+        }
+
+        split() {
+          const types = this.type.split(",").map((t) => t.trim());
+          const wantChars = types.includes("chars");
+          const wantWords = types.includes("words");
+          const wantLines = types.includes("lines");
+
+          this.elements.forEach((el) => {
+            let text = el.textContent || "";
+            el.innerHTML = "";
+
+            let words = text.split(/(\s+)/).filter((w) => w.length > 0);
+            let wordElements = [];
+            let charElements = [];
+
+            words.forEach((w) => {
+              if (/\s+/.test(w)) {
+                el.appendChild(document.createTextNode(w));
+                return;
+              }
+              let wordSpan = document.createElement("span");
+              wordSpan.style.display = "inline-block";
+              wordSpan.style.whiteSpace = "nowrap";
+              if (this.options.wordsClass)
+                wordSpan.className = this.options.wordsClass;
+
+              if (wantChars) {
+                Array.from(w).forEach((c) => {
+                  let charSpan = document.createElement("span");
+                  charSpan.style.display = "inline-block";
+                  charSpan.textContent = c;
+                  if (this.options.charsClass)
+                    charSpan.className = this.options.charsClass;
+                  wordSpan.appendChild(charSpan);
+                  charElements.push(charSpan);
+                });
+              } else {
+                wordSpan.textContent = w;
+              }
+
+              el.appendChild(wordSpan);
+              wordElements.push(wordSpan);
+            });
+
+            this.chars = this.chars.concat(charElements);
+            this.words = this.words.concat(wordElements);
+
+            if (wantLines) {
+              let currentLine = [];
+              let lastTop = -1;
+              wordElements.forEach((span) => {
+                let rect = span.getBoundingClientRect();
+                let top = rect.top;
+                if (lastTop === -1) {
+                  lastTop = top;
+                  currentLine.push(span);
+                } else if (Math.abs(top - lastTop) > 6) {
+                  let lineSpan = document.createElement("span");
+                  lineSpan.style.display = "block";
+                  if (this.options.linesClass)
+                    lineSpan.className = this.options.linesClass;
+                  currentLine.forEach((w) => {
+                    if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                    lineSpan.appendChild(w);
+                  });
+                  this.lines.push(lineSpan);
+                  currentLine = [span];
+                  lastTop = top;
+                } else {
+                  currentLine.push(span);
+                }
+              });
+              if (currentLine.length > 0) {
+                let lineSpan = document.createElement("span");
+                lineSpan.style.display = "block";
+                if (this.options.linesClass)
+                  lineSpan.className = this.options.linesClass;
+                currentLine.forEach((w) => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+              }
+            }
+          });
+        }
+
+        revert() {
+          this.originalContent.forEach((item) => {
+            item.el.innerHTML = item.html;
+          });
+        }
+      }
+      window.SplitText = SplitTextPolyfill;
+
+      // ScrollSmoother Polyfill
+      window.ScrollSmoother = {
+        create: function (options) {
+          console.log("Mock ScrollSmoother using Lenis.");
+          const lenis = new Lenis();
+          function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+          }
+          requestAnimationFrame(raf);
+          return {
+            smooth: () => lenis,
+            scrollTop: () => lenis.scroll,
+            scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+            paused: (state) => {
+              if (state === undefined) return !lenis.options.enabled;
+              if (state) lenis.stop();
+              else lenis.start();
+            },
+            kill: () => lenis.destroy(),
+          };
+        },
+      };
+
+      // Dummy premium GSAP registers
+      if (window.gsap) {
+        gsap.registerPlugin({
+          name: "drawSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "morphSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "scrambleText",
+          init() {
+            return true;
+          },
+        });
+      }
+    </script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      rel="preload"
+      href="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/media/797e433ab948586e-s.p.0r6juujl39pe6.woff2"
+      as="font"
+      crossorigin=""
+      type="font/woff2"
+    />
+    <link
+      rel="preload"
+      href="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/media/caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2"
+      as="font"
+      crossorigin=""
+      type="font/woff2"
+    />
+    <link
+      rel="stylesheet"
+      href="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0gylucv_x60n3.css"
+      data-precedence="next"
+    />
+    <link
+      rel="preload"
+      as="script"
+      fetchPriority="low"
+      href="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0a1gboz92241g.js"
+    />
+    <script
+      src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0bb4r11wys6fk.js"
+      async=""
+    ></script>
+    <script
+      src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/3peubv2924kx4.js"
+      async=""
+    ></script>
+    <script
+      src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/turbopack-1zq10kyo3q6b-.js"
+      async=""
+    ></script>
+    <script
+      src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js"
+      async=""
+    ></script>
+    <script
+      src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js"
+      async=""
+    ></script>
+    <script
+      src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/1o2os_5yen8a9.js"
+      async=""
+    ></script>
+    <script
+      src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2ae_pxw-xgayk.js"
+      async=""
+    ></script>
+    <meta name="next-size-adjust" content="" />
+    <title>Create Next App</title>
+    <meta name="description" content="Generated by create next app" />
+    <link
+      rel="icon"
+      href="/favicon.ico?favicon.2vob68tjqpejf.ico"
+      sizes="256x256"
+      type="image/x-icon"
+    />
+    <script
+      src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0cz1d0mv5g_q7.js"
+      nomodule=""
+    ></script>
+  </head>
+  <body
+    class="geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li5zG__variable"
+  >
+    <div hidden=""><!--$--><!--/$--></div>
+    <div class="sceneRoot">
+      <div
+        style="
+          position: relative;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+          pointer-events: auto;
+        "
+      >
+        <div style="width: 100%; height: 100%">
+          <canvas style="display: block"></canvas>
+        </div>
+      </div>
+      <div class="whiteEdgeGradient" aria-hidden="true"></div>
+      <div class="customCursor" aria-hidden="true"></div>
+    </div>
+    <!--$--><!--/$-->
+    <nav class="bottomNav" aria-label="Pages">
+      <a class="isActive" href="/">Tube</a><a class="" href="/codrop">Sphere</a
+      ><a class="" href="/rubens">Rubens</a>
+    </nav>
+    <script
+      src="/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0a1gboz92241g.js"
+      id="_R_"
+      async=""
+    ></script>
+    <script>
+      (self.__next_f = self.__next_f || []).push([0]);
+    </script>
+    <script>
+      self.__next_f.push([
+        1,
+        '1:"$Sreact.fragment"\n2:I[47798,["/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js","/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js"],"GlobalClickSound"]\n3:I[39756,["/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js","/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js"],"default"]\n4:I[37457,["/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js","/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js"],"default"]\n5:I[34323,["/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js","/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js"],"BottomNav"]\n6:I[7544,["/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js","/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js","/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/1o2os_5yen8a9.js","/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2ae_pxw-xgayk.js"],"FiberScene"]\n7:I[97367,["/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js","/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js"],"OutletBoundary"]\n8:"$Sreact.suspense"\na:I[97367,["/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js","/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js"],"ViewportBoundary"]\nc:I[97367,["/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js","/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js"],"MetadataBoundary"]\ne:I[68027,["/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js","/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js"],"default",1]\n:HL["/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0gylucv_x60n3.css","style"]\n:HL["/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/media/797e433ab948586e-s.p.0r6juujl39pe6.woff2","font",{"crossOrigin":"","type":"font/woff2"}]\n:HL["/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/media/caa3a2e1cccd8315-s.p.0wgildi0cnwt9.woff2","font",{"crossOrigin":"","type":"font/woff2"}]\n',
+      ]);
+    </script>
+    <script>
+      self.__next_f.push([
+        1,
+        '0:{"P":null,"c":["",""],"q":"","i":false,"f":[[["",{"children":["__PAGE__",{}]},"$undefined","$undefined",16],[["$","$1","c",{"children":[[["$","link","0",{"rel":"stylesheet","href":"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0gylucv_x60n3.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}],["$","script","script-0",{"src":"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js","async":true,"nonce":"$undefined"}]],["$","html",null,{"lang":"en","children":["$","body",null,{"className":"geist_a71539c9-module__T19VSG__variable geist_mono_8d43a2aa-module__8Li5zG__variable","children":[["$","$L2",null,{}],["$","$L3",null,{"parallelRouterKey":"children","error":"$undefined","errorStyles":"$undefined","errorScripts":"$undefined","template":["$","$L4",null,{}],"templateStyles":"$undefined","templateScripts":"$undefined","notFound":[[["$","title",null,{"children":"404: This page could not be found."}],["$","div",null,{"style":{"fontFamily":"system-ui,\\"Segoe UI\\",Roboto,Helvetica,Arial,sans-serif,\\"Apple Color Emoji\\",\\"Segoe UI Emoji\\"","height":"100vh","textAlign":"center","display":"flex","flexDirection":"column","alignItems":"center","justifyContent":"center"},"children":["$","div",null,{"children":[["$","style",null,{"dangerouslySetInnerHTML":{"__html":"body{color:#000;background:#fff;margin:0}.next-error-h1{border-right:1px solid rgba(0,0,0,.3)}@media (prefers-color-scheme:dark){body{color:#fff;background:#000}.next-error-h1{border-right:1px solid rgba(255,255,255,.3)}}"}}],["$","h1",null,{"className":"next-error-h1","style":{"display":"inline-block","margin":"0 20px 0 0","padding":"0 23px 0 0","fontSize":24,"fontWeight":500,"verticalAlign":"top","lineHeight":"49px"},"children":404}],["$","div",null,{"style":{"display":"inline-block"},"children":["$","h2",null,{"style":{"fontSize":14,"fontWeight":400,"lineHeight":"49px","margin":0},"children":"This page could not be found."}]}]]}]}]],[]],"forbidden":"$undefined","unauthorized":"$undefined"}],["$","$L5",null,{}]]}]}]]}],{"children":[["$","$1","c",{"children":[["$","$L6",null,{}],[["$","script","script-0",{"src":"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/1o2os_5yen8a9.js","async":true,"nonce":"$undefined"}],["$","script","script-1",{"src":"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2ae_pxw-xgayk.js","async":true,"nonce":"$undefined"}]],["$","$L7",null,{"children":["$","$8",null,{"name":"Next.MetadataOutlet","children":"$@9"}]}]]}],{},null,false,null]},null,false,null],["$","$1","h",{"children":[null,["$","$La",null,{"children":"$Lb"}],["$","div",null,{"hidden":true,"children":["$","$Lc",null,{"children":["$","$8",null,{"name":"Next.Metadata","children":"$Ld"}]}]}],["$","meta",null,{"name":"next-size-adjust","content":""}]]}],false]],"m":"$undefined","G":["$e",[["$","link","0",{"rel":"stylesheet","href":"/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/0gylucv_x60n3.css","precedence":"next","crossOrigin":"$undefined","nonce":"$undefined"}]]],"S":true,"h":null,"s":"$undefined","l":"$undefined","p":"$undefined","d":"$undefined","b":"W7UbMtV76XzY290uWLOjs"}\n',
+      ]);
+    </script>
+    <script>
+      self.__next_f.push([
+        1,
+        'b:[["$","meta","0",{"charSet":"utf-8"}],["$","meta","1",{"name":"viewport","content":"width=device-width, initial-scale=1"}]]\n',
+      ]);
+    </script>
+    <script>
+      self.__next_f.push([
+        1,
+        'f:I[27201,["/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/2fv3_2gepc3xc.js","/components/3D%20Animation/12/extracted/helmet-main/out/_next/static/chunks/14mrh2-p_w84d.js"],"IconMark"]\n9:null\nd:[["$","title","0",{"children":"Create Next App"}],["$","meta","1",{"name":"description","content":"Generated by create next app"}],["$","link","2",{"rel":"icon","href":"/favicon.ico?favicon.2vob68tjqpejf.ico","sizes":"256x256","type":"image/x-icon"}],["$","$Lf","3",{}]]\n',
+      ]);
+    </script>
+  </body>
+</html>

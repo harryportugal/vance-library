@@ -1,16 +1,1147 @@
 <!DOCTYPE html>
 <html lang="en" class="no-js">
   <head>
+  <!-- Automatic High-Performance Local Library Inject -->
+  <script src="/libs/three.min.js"></script>
+  <script src="/libs/GLTFLoader.js"></script>
+  <script src="/libs/gsap.min.js"></script>
+  <script src="/libs/ScrollTrigger.min.js"></script>
+  <script src="/libs/ScrollToPlugin.min.js"></script>
+  <script src="/libs/CustomEase.min.js"></script>
+  <script src="/libs/Flip.min.js"></script>
+  <script src="/libs/Observer.min.js"></script>
+  <script src="/libs/lenis.min.js"></script>
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+    window.SplitType = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Local Library Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+    window.SplitType = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
+  <!-- Automatic High-Performance Local Library Inject -->
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  <style>
+    /* Hide scrollbars globally inside iframe */
+    ::-webkit-scrollbar {
+      display: none !important;
+    }
+    html, body {
+      -ms-overflow-style: none !important;
+      scrollbar-width: none !important;
+    }
+  </style>
+  <script>
+    // Image fallback replacer for Awwwards-style slides/images
+    window.addEventListener('error', function(e) {
+      if (e.target && e.target.tagName === 'IMG') {
+        const PLACEHOLDER_IMAGES = ["https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80","https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80"];
+        const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+        e.target.src = PLACEHOLDER_IMAGES[idx];
+      }
+    }, true);
+
+    // SplitText Polyfill for GSAP compatibility
+    class SplitTextPolyfill {
+      constructor(element, options = {}) {
+        this.elements = [];
+        if (typeof element === 'string') {
+          this.elements = Array.from(document.querySelectorAll(element));
+        } else if (element.length !== undefined && !element.nodeType) {
+          this.elements = Array.from(element);
+        } else if (element) {
+          this.elements = [element];
+        }
+        
+        this.options = options;
+        this.type = options.type || "words,chars";
+        this.chars = [];
+        this.words = [];
+        this.lines = [];
+        this.originalContent = this.elements.map(el => ({ el, html: el.innerHTML }));
+        this.split();
+      }
+      
+      split() {
+        const types = this.type.split(',').map(t => t.trim());
+        const wantChars = types.includes('chars');
+        const wantWords = types.includes('words');
+        const wantLines = types.includes('lines');
+        
+        this.elements.forEach(el => {
+          let text = el.textContent || "";
+          el.innerHTML = "";
+          
+          let words = text.split(/(\s+)/).filter(w => w.length > 0);
+          let wordElements = [];
+          let charElements = [];
+          
+          words.forEach(w => {
+            if (/\s+/.test(w)) {
+              el.appendChild(document.createTextNode(w));
+              return;
+            }
+            let wordSpan = document.createElement('span');
+            wordSpan.style.display = 'inline-block';
+            wordSpan.style.whiteSpace = 'nowrap';
+            if (this.options.wordsClass) wordSpan.className = this.options.wordsClass;
+            
+            if (wantChars) {
+              Array.from(w).forEach(c => {
+                let charSpan = document.createElement('span');
+                charSpan.style.display = 'inline-block';
+                charSpan.textContent = c;
+                if (this.options.charsClass) charSpan.className = this.options.charsClass;
+                wordSpan.appendChild(charSpan);
+                charElements.push(charSpan);
+              });
+            } else {
+              wordSpan.textContent = w;
+            }
+            
+            el.appendChild(wordSpan);
+            wordElements.push(wordSpan);
+          });
+          
+          this.chars = this.chars.concat(charElements);
+          this.words = this.words.concat(wordElements);
+          
+          if (wantLines) {
+            let currentLine = [];
+            let lastTop = -1;
+            wordElements.forEach(span => {
+              let rect = span.getBoundingClientRect();
+              let top = rect.top;
+              if (lastTop === -1) {
+                lastTop = top;
+                currentLine.push(span);
+              } else if (Math.abs(top - lastTop) > 6) {
+                let lineSpan = document.createElement('span');
+                lineSpan.style.display = 'block';
+                if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+                currentLine.forEach(w => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+                currentLine = [span];
+                lastTop = top;
+              } else {
+                currentLine.push(span);
+              }
+            });
+            if (currentLine.length > 0) {
+              let lineSpan = document.createElement('span');
+              lineSpan.style.display = 'block';
+              if (this.options.linesClass) lineSpan.className = this.options.linesClass;
+              currentLine.forEach(w => {
+                if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                lineSpan.appendChild(w);
+              });
+              this.lines.push(lineSpan);
+            }
+          }
+        });
+      }
+      
+      revert() {
+        this.originalContent.forEach(item => {
+          item.el.innerHTML = item.html;
+        });
+      }
+    }
+    window.SplitText = SplitTextPolyfill;
+    window.SplitType = SplitTextPolyfill;
+
+    // ScrollSmoother Polyfill
+    window.ScrollSmoother = {
+      create: function(options) {
+        console.log("Mock ScrollSmoother using Lenis.");
+        const lenis = new Lenis();
+        function raf(time) {
+          lenis.raf(time);
+          requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+        return {
+          smooth: () => lenis,
+          scrollTop: () => lenis.scroll,
+          scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+          paused: (state) => {
+            if (state === undefined) return !lenis.options.enabled;
+            if (state) lenis.stop(); else lenis.start();
+          },
+          kill: () => lenis.destroy()
+        };
+      }
+    };
+
+    // Dummy premium GSAP registers
+    if (window.gsap) {
+      gsap.registerPlugin({ name: "drawSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "morphSVG", init() { return true; } });
+      gsap.registerPlugin({ name: "scrambleText", init() { return true; } });
+    }
+  </script>
+
     <!-- Automatic High-Performance Local Library Inject -->
-    <script src="/libs/three.min.js"></script>
-    <script src="/libs/GLTFLoader.js"></script>
-    <script src="/libs/gsap.min.js"></script>
-    <script src="/libs/ScrollTrigger.min.js"></script>
-    <script src="/libs/ScrollToPlugin.min.js"></script>
-    <script src="/libs/CustomEase.min.js"></script>
-    <script src="/libs/Flip.min.js"></script>
-    <script src="/libs/Observer.min.js"></script>
-    <script src="/libs/lenis.min.js"></script>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <style>
+      /* Hide scrollbars globally inside iframe */
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      html,
+      body {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+      }
+    </style>
+    <script>
+      // Image fallback replacer for Awwwards-style slides/images
+      window.addEventListener(
+        "error",
+        function (e) {
+          if (e.target && e.target.tagName === "IMG") {
+            const PLACEHOLDER_IMAGES = [
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80",
+            ];
+            const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+            e.target.src = PLACEHOLDER_IMAGES[idx];
+          }
+        },
+        true
+      );
+
+      // SplitText Polyfill for GSAP compatibility
+      class SplitTextPolyfill {
+        constructor(element, options = {}) {
+          this.elements = [];
+          if (typeof element === "string") {
+            this.elements = Array.from(document.querySelectorAll(element));
+          } else if (element.length !== undefined && !element.nodeType) {
+            this.elements = Array.from(element);
+          } else if (element) {
+            this.elements = [element];
+          }
+
+          this.options = options;
+          this.type = options.type || "words,chars";
+          this.chars = [];
+          this.words = [];
+          this.lines = [];
+          this.originalContent = this.elements.map((el) => ({
+            el,
+            html: el.innerHTML,
+          }));
+          this.split();
+        }
+
+        split() {
+          const types = this.type.split(",").map((t) => t.trim());
+          const wantChars = types.includes("chars");
+          const wantWords = types.includes("words");
+          const wantLines = types.includes("lines");
+
+          this.elements.forEach((el) => {
+            let text = el.textContent || "";
+            el.innerHTML = "";
+
+            let words = text.split(/(\s+)/).filter((w) => w.length > 0);
+            let wordElements = [];
+            let charElements = [];
+
+            words.forEach((w) => {
+              if (/\s+/.test(w)) {
+                el.appendChild(document.createTextNode(w));
+                return;
+              }
+              let wordSpan = document.createElement("span");
+              wordSpan.style.display = "inline-block";
+              wordSpan.style.whiteSpace = "nowrap";
+              if (this.options.wordsClass)
+                wordSpan.className = this.options.wordsClass;
+
+              if (wantChars) {
+                Array.from(w).forEach((c) => {
+                  let charSpan = document.createElement("span");
+                  charSpan.style.display = "inline-block";
+                  charSpan.textContent = c;
+                  if (this.options.charsClass)
+                    charSpan.className = this.options.charsClass;
+                  wordSpan.appendChild(charSpan);
+                  charElements.push(charSpan);
+                });
+              } else {
+                wordSpan.textContent = w;
+              }
+
+              el.appendChild(wordSpan);
+              wordElements.push(wordSpan);
+            });
+
+            this.chars = this.chars.concat(charElements);
+            this.words = this.words.concat(wordElements);
+
+            if (wantLines) {
+              let currentLine = [];
+              let lastTop = -1;
+              wordElements.forEach((span) => {
+                let rect = span.getBoundingClientRect();
+                let top = rect.top;
+                if (lastTop === -1) {
+                  lastTop = top;
+                  currentLine.push(span);
+                } else if (Math.abs(top - lastTop) > 6) {
+                  let lineSpan = document.createElement("span");
+                  lineSpan.style.display = "block";
+                  if (this.options.linesClass)
+                    lineSpan.className = this.options.linesClass;
+                  currentLine.forEach((w) => {
+                    if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                    lineSpan.appendChild(w);
+                  });
+                  this.lines.push(lineSpan);
+                  currentLine = [span];
+                  lastTop = top;
+                } else {
+                  currentLine.push(span);
+                }
+              });
+              if (currentLine.length > 0) {
+                let lineSpan = document.createElement("span");
+                lineSpan.style.display = "block";
+                if (this.options.linesClass)
+                  lineSpan.className = this.options.linesClass;
+                currentLine.forEach((w) => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+              }
+            }
+          });
+        }
+
+        revert() {
+          this.originalContent.forEach((item) => {
+            item.el.innerHTML = item.html;
+          });
+        }
+      }
+      window.SplitText = SplitTextPolyfill;
+      window.SplitType = SplitTextPolyfill;
+
+      // ScrollSmoother Polyfill
+      window.ScrollSmoother = {
+        create: function (options) {
+          console.log("Mock ScrollSmoother using Lenis.");
+          const lenis = new Lenis();
+          function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+          }
+          requestAnimationFrame(raf);
+          return {
+            smooth: () => lenis,
+            scrollTop: () => lenis.scroll,
+            scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+            paused: (state) => {
+              if (state === undefined) return !lenis.options.enabled;
+              if (state) lenis.stop();
+              else lenis.start();
+            },
+            kill: () => lenis.destroy(),
+          };
+        },
+      };
+
+      // Dummy premium GSAP registers
+      if (window.gsap) {
+        gsap.registerPlugin({
+          name: "drawSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "morphSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "scrambleText",
+          init() {
+            return true;
+          },
+        });
+      }
+    </script>
+
+    <!-- Automatic High-Performance Local Library Inject -->
+
+    <style>
+      /* Hide scrollbars globally inside iframe */
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      html,
+      body {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+      }
+    </style>
+    <script>
+      // Image fallback replacer for Awwwards-style slides/images
+      window.addEventListener(
+        "error",
+        function (e) {
+          if (e.target && e.target.tagName === "IMG") {
+            const PLACEHOLDER_IMAGES = [
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80",
+            ];
+            const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+            e.target.src = PLACEHOLDER_IMAGES[idx];
+          }
+        },
+        true
+      );
+
+      // SplitText Polyfill for GSAP compatibility
+      class SplitTextPolyfill {
+        constructor(element, options = {}) {
+          this.elements = [];
+          if (typeof element === "string") {
+            this.elements = Array.from(document.querySelectorAll(element));
+          } else if (element.length !== undefined && !element.nodeType) {
+            this.elements = Array.from(element);
+          } else if (element) {
+            this.elements = [element];
+          }
+
+          this.options = options;
+          this.type = options.type || "words,chars";
+          this.chars = [];
+          this.words = [];
+          this.lines = [];
+          this.originalContent = this.elements.map((el) => ({
+            el,
+            html: el.innerHTML,
+          }));
+          this.split();
+        }
+
+        split() {
+          const types = this.type.split(",").map((t) => t.trim());
+          const wantChars = types.includes("chars");
+          const wantWords = types.includes("words");
+          const wantLines = types.includes("lines");
+
+          this.elements.forEach((el) => {
+            let text = el.textContent || "";
+            el.innerHTML = "";
+
+            let words = text.split(/(\s+)/).filter((w) => w.length > 0);
+            let wordElements = [];
+            let charElements = [];
+
+            words.forEach((w) => {
+              if (/\s+/.test(w)) {
+                el.appendChild(document.createTextNode(w));
+                return;
+              }
+              let wordSpan = document.createElement("span");
+              wordSpan.style.display = "inline-block";
+              wordSpan.style.whiteSpace = "nowrap";
+              if (this.options.wordsClass)
+                wordSpan.className = this.options.wordsClass;
+
+              if (wantChars) {
+                Array.from(w).forEach((c) => {
+                  let charSpan = document.createElement("span");
+                  charSpan.style.display = "inline-block";
+                  charSpan.textContent = c;
+                  if (this.options.charsClass)
+                    charSpan.className = this.options.charsClass;
+                  wordSpan.appendChild(charSpan);
+                  charElements.push(charSpan);
+                });
+              } else {
+                wordSpan.textContent = w;
+              }
+
+              el.appendChild(wordSpan);
+              wordElements.push(wordSpan);
+            });
+
+            this.chars = this.chars.concat(charElements);
+            this.words = this.words.concat(wordElements);
+
+            if (wantLines) {
+              let currentLine = [];
+              let lastTop = -1;
+              wordElements.forEach((span) => {
+                let rect = span.getBoundingClientRect();
+                let top = rect.top;
+                if (lastTop === -1) {
+                  lastTop = top;
+                  currentLine.push(span);
+                } else if (Math.abs(top - lastTop) > 6) {
+                  let lineSpan = document.createElement("span");
+                  lineSpan.style.display = "block";
+                  if (this.options.linesClass)
+                    lineSpan.className = this.options.linesClass;
+                  currentLine.forEach((w) => {
+                    if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                    lineSpan.appendChild(w);
+                  });
+                  this.lines.push(lineSpan);
+                  currentLine = [span];
+                  lastTop = top;
+                } else {
+                  currentLine.push(span);
+                }
+              });
+              if (currentLine.length > 0) {
+                let lineSpan = document.createElement("span");
+                lineSpan.style.display = "block";
+                if (this.options.linesClass)
+                  lineSpan.className = this.options.linesClass;
+                currentLine.forEach((w) => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+              }
+            }
+          });
+        }
+
+        revert() {
+          this.originalContent.forEach((item) => {
+            item.el.innerHTML = item.html;
+          });
+        }
+      }
+      window.SplitText = SplitTextPolyfill;
+      window.SplitType = SplitTextPolyfill;
+
+      // ScrollSmoother Polyfill
+      window.ScrollSmoother = {
+        create: function (options) {
+          console.log("Mock ScrollSmoother using Lenis.");
+          const lenis = new Lenis();
+          function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+          }
+          requestAnimationFrame(raf);
+          return {
+            smooth: () => lenis,
+            scrollTop: () => lenis.scroll,
+            scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+            paused: (state) => {
+              if (state === undefined) return !lenis.options.enabled;
+              if (state) lenis.stop();
+              else lenis.start();
+            },
+            kill: () => lenis.destroy(),
+          };
+        },
+      };
+
+      // Dummy premium GSAP registers
+      if (window.gsap) {
+        gsap.registerPlugin({
+          name: "drawSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "morphSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "scrambleText",
+          init() {
+            return true;
+          },
+        });
+      }
+    </script>
+
+    <!-- Automatic High-Performance Local Library Inject -->
+
+    <style>
+      /* Hide scrollbars globally inside iframe */
+      ::-webkit-scrollbar {
+        display: none !important;
+      }
+      html,
+      body {
+        -ms-overflow-style: none !important;
+        scrollbar-width: none !important;
+      }
+    </style>
+    <script>
+      // Image fallback replacer for Awwwards-style slides/images
+      window.addEventListener(
+        "error",
+        function (e) {
+          if (e.target && e.target.tagName === "IMG") {
+            const PLACEHOLDER_IMAGES = [
+              "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1519074002996-a69e7ac46a42?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1502082553048-f009c37129b9?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1475924156734-496f6cac6ec1?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=800&q=80",
+              "https://images.unsplash.com/photo-1472214222541-d510753a4907?auto=format&fit=crop&w=800&q=80",
+            ];
+            const idx = Math.floor(Math.random() * PLACEHOLDER_IMAGES.length);
+            e.target.src = PLACEHOLDER_IMAGES[idx];
+          }
+        },
+        true
+      );
+
+      // SplitText Polyfill for GSAP compatibility
+      class SplitTextPolyfill {
+        constructor(element, options = {}) {
+          this.elements = [];
+          if (typeof element === "string") {
+            this.elements = Array.from(document.querySelectorAll(element));
+          } else if (element.length !== undefined && !element.nodeType) {
+            this.elements = Array.from(element);
+          } else if (element) {
+            this.elements = [element];
+          }
+
+          this.options = options;
+          this.type = options.type || "words,chars";
+          this.chars = [];
+          this.words = [];
+          this.lines = [];
+          this.originalContent = this.elements.map((el) => ({
+            el,
+            html: el.innerHTML,
+          }));
+          this.split();
+        }
+
+        split() {
+          const types = this.type.split(",").map((t) => t.trim());
+          const wantChars = types.includes("chars");
+          const wantWords = types.includes("words");
+          const wantLines = types.includes("lines");
+
+          this.elements.forEach((el) => {
+            let text = el.textContent || "";
+            el.innerHTML = "";
+
+            let words = text.split(/(\s+)/).filter((w) => w.length > 0);
+            let wordElements = [];
+            let charElements = [];
+
+            words.forEach((w) => {
+              if (/\s+/.test(w)) {
+                el.appendChild(document.createTextNode(w));
+                return;
+              }
+              let wordSpan = document.createElement("span");
+              wordSpan.style.display = "inline-block";
+              wordSpan.style.whiteSpace = "nowrap";
+              if (this.options.wordsClass)
+                wordSpan.className = this.options.wordsClass;
+
+              if (wantChars) {
+                Array.from(w).forEach((c) => {
+                  let charSpan = document.createElement("span");
+                  charSpan.style.display = "inline-block";
+                  charSpan.textContent = c;
+                  if (this.options.charsClass)
+                    charSpan.className = this.options.charsClass;
+                  wordSpan.appendChild(charSpan);
+                  charElements.push(charSpan);
+                });
+              } else {
+                wordSpan.textContent = w;
+              }
+
+              el.appendChild(wordSpan);
+              wordElements.push(wordSpan);
+            });
+
+            this.chars = this.chars.concat(charElements);
+            this.words = this.words.concat(wordElements);
+
+            if (wantLines) {
+              let currentLine = [];
+              let lastTop = -1;
+              wordElements.forEach((span) => {
+                let rect = span.getBoundingClientRect();
+                let top = rect.top;
+                if (lastTop === -1) {
+                  lastTop = top;
+                  currentLine.push(span);
+                } else if (Math.abs(top - lastTop) > 6) {
+                  let lineSpan = document.createElement("span");
+                  lineSpan.style.display = "block";
+                  if (this.options.linesClass)
+                    lineSpan.className = this.options.linesClass;
+                  currentLine.forEach((w) => {
+                    if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                    lineSpan.appendChild(w);
+                  });
+                  this.lines.push(lineSpan);
+                  currentLine = [span];
+                  lastTop = top;
+                } else {
+                  currentLine.push(span);
+                }
+              });
+              if (currentLine.length > 0) {
+                let lineSpan = document.createElement("span");
+                lineSpan.style.display = "block";
+                if (this.options.linesClass)
+                  lineSpan.className = this.options.linesClass;
+                currentLine.forEach((w) => {
+                  if (w.parentNode) w.parentNode.insertBefore(lineSpan, w);
+                  lineSpan.appendChild(w);
+                });
+                this.lines.push(lineSpan);
+              }
+            }
+          });
+        }
+
+        revert() {
+          this.originalContent.forEach((item) => {
+            item.el.innerHTML = item.html;
+          });
+        }
+      }
+      window.SplitText = SplitTextPolyfill;
+      window.SplitType = SplitTextPolyfill;
+
+      // ScrollSmoother Polyfill
+      window.ScrollSmoother = {
+        create: function (options) {
+          console.log("Mock ScrollSmoother using Lenis.");
+          const lenis = new Lenis();
+          function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+          }
+          requestAnimationFrame(raf);
+          return {
+            smooth: () => lenis,
+            scrollTop: () => lenis.scroll,
+            scrollTo: (target, vars) => lenis.scrollTo(target, vars),
+            paused: (state) => {
+              if (state === undefined) return !lenis.options.enabled;
+              if (state) lenis.stop();
+              else lenis.start();
+            },
+            kill: () => lenis.destroy(),
+          };
+        },
+      };
+
+      // Dummy premium GSAP registers
+      if (window.gsap) {
+        gsap.registerPlugin({
+          name: "drawSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "morphSVG",
+          init() {
+            return true;
+          },
+        });
+        gsap.registerPlugin({
+          name: "scrambleText",
+          init() {
+            return true;
+          },
+        });
+      }
+    </script>
+
+    <!-- Automatic High-Performance Local Library Inject -->
+
     <style>
       /* Hide scrollbars globally inside iframe */
       ::-webkit-scrollbar {

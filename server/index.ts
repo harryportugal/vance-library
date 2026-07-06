@@ -9,6 +9,7 @@ import { BillingEngine } from "./billing/billing.engine";
 
 const prisma = new PrismaClient();
 const app = express();
+app.set("trust proxy", true);
 const billing = new BillingEngine();
 
 // Rule 3.2: Configure Helmet with strict security headers (CSP, HSTS, X-Frame-Options)
@@ -94,8 +95,8 @@ app.use("/api/auth/sign-up", authLimiter);
 app.use("/api/auth/forget-password", authLimiter);
 app.use("/api/auth/reset-password", authLimiter);
 
-// Mount Better Auth Handler
-app.use("/api/auth", toNodeHandler(auth));
+// Mount Better Auth Handler (using Express 5 wildcard parameter format)
+app.all("/api/auth/{*any}", toNodeHandler(auth));
 
 // Express body parsers (Mounted AFTER Better Auth to prevent stream consumption issues)
 app.use(express.json());

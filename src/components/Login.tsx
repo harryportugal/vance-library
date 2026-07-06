@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type Language } from '../i18n';
 import { authClient } from '../lib/auth-client';
@@ -7,6 +7,7 @@ import { authClient } from '../lib/auth-client';
 interface LoginProps {
   lang: Language;
   onLogin: () => void;
+  onClose?: () => void;
   initialMode?: 'signin' | 'signup';
 }
 
@@ -170,7 +171,7 @@ const itemVariants = {
   }
 };
 
-export default function Login({ lang, onLogin, initialMode = 'signin' }: LoginProps) {
+export default function Login({ lang, onLogin, onClose, initialMode = 'signin' }: LoginProps) {
   const [mode, setMode] = useState<'signin' | 'signup' | 'forgot' | 'reset' | 'plans'>(initialMode);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -207,6 +208,19 @@ export default function Login({ lang, onLogin, initialMode = 'signin' }: LoginPr
         onLogin();
       }
     } catch (err) {
+      setErrorMessage("Erro ao conectar com o servidor. Tente novamente.");
+    }
+  };
+
+  const handleSocialSignIn = async (provider: 'google' | 'github') => {
+    setErrorMessage('');
+    setSuccessMessage('');
+    try {
+      await authClient.signIn.social({
+        provider,
+        callbackURL: window.location.origin + '/',
+      });
+    } catch (err: any) {
       setErrorMessage("Erro ao conectar com o servidor. Tente novamente.");
     }
   };
@@ -300,6 +314,17 @@ export default function Login({ lang, onLogin, initialMode = 'signin' }: LoginPr
 
   return (
     <div className="min-h-screen w-full relative overflow-hidden bg-black flex items-center justify-center p-4 md:p-6 selection:bg-zinc-800">
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-6 right-6 z-[60] w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white flex items-center justify-center transition-all cursor-pointer shadow-lg backdrop-blur-sm"
+          title="Fechar"
+        >
+          <X size={18} />
+        </button>
+      )}
+
       {/* ── 1. Global Background Image ───────────────────────────────── */}
       <img
         src="/login-sky.jpeg"
@@ -434,8 +459,35 @@ export default function Login({ lang, onLogin, initialMode = 'signin' }: LoginPr
                   {/* Divider */}
                   <motion.div variants={itemVariants} className="flex items-center gap-4 my-2">
                     <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent to-gray-200" />
-                    <span className="text-[10px] font-bold text-gray-450 tracking-[0.2em] uppercase select-none">{t.or}</span>
+                    <span className="text-[10px] font-bold text-gray-455 tracking-[0.2em] uppercase select-none">{t.or}</span>
                     <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent to-gray-200" />
+                  </motion.div>
+
+                  {/* OAuth Buttons */}
+                  <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 mb-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSocialSignIn("google")}
+                      className="flex items-center justify-center gap-2.5 p-3.5 bg-zinc-950 hover:bg-zinc-900 text-white rounded-[1.25rem] transition-all duration-300 cursor-pointer text-xs font-bold uppercase tracking-wider shadow-sm"
+                    >
+                      <svg className="w-4 h-4 shrink-0 fill-current" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.51 0-6.357-2.827-6.357-6.314 0-3.487 2.848-6.314 6.357-6.314 1.704 0 3.238.675 4.382 1.768l3.185-3.185C19.34 2.457 16.035 1.2 12.24 1.2 6.03 1.2 1 6.202 1 12.4s5.03 11.2 11.24 11.2c5.938 0 10.87-4.227 10.87-11.2 0-.6-.057-1.1-.157-1.615H12.24z"
+                        />
+                      </svg>
+                      <span>Google</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSocialSignIn("github")}
+                      className="flex items-center justify-center gap-2.5 p-3 bg-zinc-950 hover:bg-zinc-900 text-white rounded-[1.25rem] transition-all duration-300 cursor-pointer text-xs font-bold uppercase tracking-wider shadow-sm"
+                    >
+                      <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
+                        <path d="M12 1.2C5.37 1.2 0 6.57 0 13.2c0 5.3 3.43 9.8 8.2 11.38.6.11.82-.26.82-.57 0-.29-.01-1.04-.02-2.04-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1-.32 3.3 1.23.95-.26 1.97-.39 3-.4 1.03.01 2.05.14 3 .4 2.28-1.55 3.28-1.23 3.28-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.62-5.47 5.92.43.37.82 1.1.82 2.22 0 1.6-.01 2.9-.01 3.29 0 .31.22.69.82.57 4.77-1.58 8.2-6.08 8.2-11.38C24 6.57 18.63 1.2 12 1.2z" />
+                      </svg>
+                      <span>GitHub</span>
+                    </button>
                   </motion.div>
 
                   {/* Guest Button */}
@@ -443,7 +495,7 @@ export default function Login({ lang, onLogin, initialMode = 'signin' }: LoginPr
                     variants={itemVariants}
                     whileTap={{ scale: 0.985 }}
                     type="button"
-                    onClick={onLogin}
+                    onClick={onClose || onLogin}
                     className="w-full flex items-center justify-between p-3.5 bg-gray-50 hover:bg-gray-100/80 border border-gray-200/80 hover:border-gray-300 rounded-[1.25rem] transition-all duration-300 group cursor-pointer text-sm font-semibold text-gray-800"
                   >
                     <div className="flex items-center gap-3">
@@ -574,6 +626,40 @@ export default function Login({ lang, onLogin, initialMode = 'signin' }: LoginPr
                       </button>
                     </motion.div>
                   </motion.form>
+
+                  {/* Divider */}
+                  <motion.div variants={itemVariants} className="flex items-center gap-4 my-2">
+                    <div className="flex-1 h-[1px] bg-gradient-to-r from-transparent to-gray-200" />
+                    <span className="text-[10px] font-bold text-gray-450 tracking-[0.2em] uppercase select-none">{t.or}</span>
+                    <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent to-gray-200" />
+                  </motion.div>
+
+                  {/* OAuth Buttons */}
+                  <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 mb-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSocialSignIn("google")}
+                      className="flex items-center justify-center gap-2.5 p-3.5 bg-zinc-950 hover:bg-zinc-900 text-white rounded-[1.25rem] transition-all duration-300 cursor-pointer text-xs font-bold uppercase tracking-wider shadow-sm"
+                    >
+                      <svg className="w-4 h-4 shrink-0 fill-current" viewBox="0 0 24 24">
+                        <path
+                          fill="currentColor"
+                          d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.51 0-6.357-2.827-6.357-6.314 0-3.487 2.848-6.314 6.357-6.314 1.704 0 3.238.675 4.382 1.768l3.185-3.185C19.34 2.457 16.035 1.2 12.24 1.2 6.03 1.2 1 6.202 1 12.4s5.03 11.2 11.24 11.2c5.938 0 10.87-4.227 10.87-11.2 0-.6-.057-1.1-.157-1.615H12.24z"
+                        />
+                      </svg>
+                      <span>Google</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSocialSignIn("github")}
+                      className="flex items-center justify-center gap-2.5 p-3 bg-zinc-950 hover:bg-zinc-900 text-white rounded-[1.25rem] transition-all duration-300 cursor-pointer text-xs font-bold uppercase tracking-wider shadow-sm"
+                    >
+                      <svg className="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24">
+                        <path d="M12 1.2C5.37 1.2 0 6.57 0 13.2c0 5.3 3.43 9.8 8.2 11.38.6.11.82-.26.82-.57 0-.29-.01-1.04-.02-2.04-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.75.08-.73.08-.73 1.21.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.17 0 0 1-.32 3.3 1.23.95-.26 1.97-.39 3-.4 1.03.01 2.05.14 3 .4 2.28-1.55 3.28-1.23 3.28-1.23.66 1.65.24 2.87.12 3.17.77.84 1.24 1.91 1.24 3.22 0 4.61-2.8 5.62-5.47 5.92.43.37.82 1.1.82 2.22 0 1.6-.01 2.9-.01 3.29 0 .31.22.69.82.57 4.77-1.58 8.2-6.08 8.2-11.38C24 6.57 18.63 1.2 12 1.2z" />
+                      </svg>
+                      <span>GitHub</span>
+                    </button>
+                  </motion.div>
                 </div>
 
                 {/* Footer */}

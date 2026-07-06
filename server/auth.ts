@@ -16,9 +16,31 @@ if (process.env.NODE_ENV === "production" && !process.env.BETTER_AUTH_SECRET) {
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
-    provider: "sqlite",
+    provider: "postgresql",
   }),
   
+  baseURL: process.env.BETTER_AUTH_URL || "http://localhost:5173",
+
+  socialProviders: {
+    ...(process.env.GOOGLE_CLIENT_ID && {
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      },
+    }),
+    ...(process.env.GITHUB_CLIENT_ID && {
+      github: {
+        clientId: process.env.GITHUB_CLIENT_ID,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+      },
+    }),
+  },
+
+  accountLinking: {
+    enabled: true,
+    trustedProviders: ["google", "github"],
+  },
+
   // Custom User fields mappings
   user: {
     additionalFields: {
@@ -75,6 +97,7 @@ export const auth = betterAuth({
     cookiePrefix: "vance-auth",
     // Only send cookies over HTTPS in production
     useSecureCookies: process.env.NODE_ENV === "production",
+    trustProxy: true,
   },
   
   secret: process.env.BETTER_AUTH_SECRET || "vance-library-super-secret-key-32-chars-minimum-dev-fallback",

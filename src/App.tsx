@@ -56,6 +56,7 @@ function getAssetUrl(url: string | null | undefined): string {
 export default function App() {
   const { data: sessionData } = authClient.useSession();
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
   const isLoggedIn = !!sessionData;
 
   const lenisRef = useRef<Lenis | null>(null);
@@ -86,8 +87,20 @@ export default function App() {
   const handleLogin = () => {
     if (pageTransitionRef.current) {
       pageTransitionRef.current.play(() => {
-        // Better Auth updates the session dynamically
+        setLoginModalOpen(false);
       });
+    } else {
+      setLoginModalOpen(false);
+    }
+  };
+
+  const handleCloseLogin = () => {
+    if (pageTransitionRef.current) {
+      pageTransitionRef.current.play(() => {
+        setLoginModalOpen(false);
+      });
+    } else {
+      setLoginModalOpen(false);
     }
   };
 
@@ -95,9 +108,11 @@ export default function App() {
     if (pageTransitionRef.current) {
       pageTransitionRef.current.play(async () => {
         await authClient.signOut();
+        window.location.href = "/";
       });
     } else {
       await authClient.signOut();
+      window.location.href = "/";
     }
   };
 
@@ -170,9 +185,11 @@ export default function App() {
     if (pageTransitionRef.current) {
       pageTransitionRef.current.play(() => {
         setLoginInitialMode(mode);
+        setLoginModalOpen(true);
       });
     } else {
       setLoginInitialMode(mode);
+      setLoginModalOpen(true);
     }
   };
 
@@ -257,12 +274,19 @@ export default function App() {
     if (comp) {
       // Route Protection & Premium validation
       const isProComp = parseInt(comp.id) % 5 === 0;
-      const isUserPremium = sessionData?.user?.role === 'admin' || sessionData?.user?.plan === 'premium';
 
-      if (isProComp && !isUserPremium) {
-        setPricingModalOpen(true);
-        alert(lang === 'pt' ? 'Este recurso é exclusivo para assinantes Premium. Escolha um plano para liberar o acesso!' : 'This is a Premium-exclusive resource. Upgrade your plan to unlock access!');
-        return;
+      if (isProComp) {
+        if (!isLoggedIn) {
+          handleNavigateToLogin('signin');
+          return;
+        }
+        
+        const isUserPremium = sessionData?.user?.role === 'admin' || sessionData?.user?.plan === 'premium';
+        if (!isUserPremium) {
+          setPricingModalOpen(true);
+          alert(lang === 'pt' ? 'Este recurso é exclusivo para assinantes Premium. Escolha um plano para liberar o acesso!' : 'This is a Premium-exclusive resource. Upgrade your plan to unlock access!');
+          return;
+        }
       }
 
       setCatalogScrollY(window.scrollY);
@@ -283,6 +307,10 @@ export default function App() {
 
   const handleCopyPrompt = () => {
     if (!selectedComponent) return;
+    if (!isLoggedIn) {
+      handleNavigateToLogin('signin');
+      return;
+    }
     const absoluteZipUrl = getAssetUrl(selectedComponent.zipUrl).startsWith('http')
       ? getAssetUrl(selectedComponent.zipUrl)
       : `${window.location.origin}${selectedComponent.zipUrl}`;
@@ -456,10 +484,14 @@ export default function App() {
 
   const toggleFavorite = useCallback((id: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
+    if (!isLoggedIn) {
+      handleNavigateToLogin('signin');
+      return;
+    }
     setFavorites(prev =>
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
-  }, []);
+  }, [isLoggedIn]);
 
   // Reset scroll/pagination when filters change
   useEffect(() => {
@@ -655,12 +687,9 @@ export default function App() {
 
   return (
     <div className="relative min-h-screen w-full selection:bg-zinc-800 bg-[#0c0c0e]">
-      {!isLoggedIn ? (
-        <Login lang={lang} onLogin={handleLogin} initialMode={loginInitialMode} />
-      ) : (
-        <div className={`min-h-screen w-full flex flex-col font-sans transition-colors duration-300 ${
-          theme === 'dark' ? 'bg-[#0e0e11] text-zinc-100' : 'bg-zinc-50 text-zinc-800'
-        }`}>
+      <div className={`min-h-screen w-full flex flex-col font-sans transition-colors duration-300 ${
+        theme === 'dark' ? 'bg-[#0e0e11] text-zinc-100' : 'bg-zinc-50 text-zinc-800'
+      }`}>
       <header 
         style={{ top: '12px' }}
         className={`sticky z-50 mt-3 h-16 w-[calc(100%-1.5rem)] mx-auto flex items-center justify-between px-8 select-none rounded-xl transition-all duration-300 ${
@@ -746,7 +775,13 @@ export default function App() {
                 </button>
                 {/* Code Button inside Capsule */}
                 <button 
-                  onClick={() => setPromptModalOpen(true)}
+                  onClick={() => {
+                    if (!isLoggedIn) {
+                      handleNavigateToLogin('signin');
+                    } else {
+                      setPromptModalOpen(true);
+                    }
+                  }}
                   className="px-3 h-7 rounded-[9px] bg-[#1e1e22] hover:bg-[#28282c] text-zinc-300 hover:text-white text-xs font-semibold flex items-center justify-center transition-all cursor-pointer"
                 >
                   <span>Code</span>
@@ -1038,7 +1073,7 @@ export default function App() {
           })()
         ) : (
           /* Components Catalog View */
-          <div className="space-y-12 animate-fade-in w-full">
+          <div className="space-y-6 animate-fade-in w-full">
             {/* 1. Brand Hero Section */}
             <div className="flex flex-col gap-5 pt-8 pb-3">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-normal text-white tracking-tight leading-tight select-none text-center">
@@ -1090,14 +1125,33 @@ export default function App() {
                 {lang === 'pt' ? 'Grátis' : (lang === 'es' ? 'Gratis' : 'Free')}
               </button>
 
+              {/* Pill 3: Favorites */}
+              <button
+                onClick={() => {
+                  if (!isLoggedIn) {
+                    handleNavigateToLogin('signin');
+                  } else {
+                    setSelectedCategory(selectedCategory === 'Favorites' ? 'All' : 'Favorites');
+                  }
+                }}
+                className={`px-4 py-2 text-xs font-semibold whitespace-nowrap rounded-full cursor-pointer transition-all border-none hero-category-pill flex items-center gap-1.5 ${
+                  selectedCategory === 'Favorites'
+                    ? 'bg-zinc-800 text-white shadow-sm'
+                    : 'bg-zinc-900/60 text-zinc-300 hover:bg-zinc-800 hover:text-white'
+                }`}
+              >
+                <Heart size={12} className={selectedCategory === 'Favorites' ? 'fill-white text-white' : 'text-zinc-400'} />
+                <span>{lang === 'pt' ? 'Favoritos' : (lang === 'es' ? 'Favoritos' : 'Favorites')}</span>
+              </button>
+
               {/* Vertical divider line */}
               <div className="w-px h-4 bg-zinc-800 self-center mx-1.5 shrink-0" />
 
               {/* Category Pills (Curated Subset) */}
               {[
-                { label: 'Button', value: 'Hover Effects' },
+                { label: 'Scroll Animations', value: 'Scroll Animation' },
                 { label: 'Page Transition', value: 'Page Transitions' },
-                { label: 'Section Transition', value: 'Background Animations' },
+                { label: '3D Animations', value: '3D Animation' },
                 { label: 'Text Reveal', value: 'Text Animations' }
               ].map(cat => {
                 const isActive = selectedCategory === cat.value;
@@ -1129,9 +1183,7 @@ export default function App() {
               </div>
             ) : filteredComponentsList.length === 0 ? (
               /* Empty state */
-              <div className={`h-64 flex flex-col items-center justify-center text-zinc-550 gap-2 p-8 text-center border border-dashed rounded-2xl ${
-                theme === 'dark' ? 'border-zinc-900 bg-zinc-950/20' : 'border-zinc-200 bg-zinc-50/50'
-              }`}>
+              <div className="h-64 flex flex-col items-center justify-center text-zinc-550 gap-2 p-8 text-center bg-transparent">
                 <Info size={36} className="text-zinc-700" />
                 <h3 className={`font-semibold text-sm ${theme === 'dark' ? 'text-zinc-350' : 'text-zinc-700'}`}>{t.noComponentsTitle}</h3>
                 <p className="text-xs max-w-xs">{t.noComponentsDesc}</p>
@@ -1156,6 +1208,10 @@ export default function App() {
                     noPreviewText={t.noPreview}
                     addToFavoritesText={t.addToFavorites}
                     removeFromFavoritesText={t.removeFromFavorites}
+                    isLoggedIn={isLoggedIn}
+                    onOpenLogin={() => {
+                      handleNavigateToLogin('signin');
+                    }}
                   />
                 ))}
               </div>
@@ -1316,6 +1372,11 @@ export default function App() {
         <ProfileModal 
           onClose={() => setProfileModalOpen(false)}
           lang={lang}
+          onLogout={handleLogout}
+          onOpenPricing={() => {
+            setProfileModalOpen(false);
+            setPricingModalOpen(true);
+          }}
         />
       )}
 
@@ -1489,6 +1550,28 @@ export default function App() {
         </div>
       )}
       </div>
+
+      {loginModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <Login 
+            lang={lang} 
+            onLogin={handleLogin} 
+            onClose={handleCloseLogin}
+            initialMode={loginInitialMode} 
+          />
+        </div>
+      )}
+
+      {profileModalOpen && (
+        <ProfileModal 
+          onClose={() => setProfileModalOpen(false)}
+          lang={lang}
+          onLogout={handleLogout}
+          onOpenPricing={() => {
+            setProfileModalOpen(false);
+            setPricingModalOpen(true);
+          }}
+        />
       )}
 
       {/* Page Transitions #11 Grid Blocks Overlay */}
@@ -1566,6 +1649,8 @@ const ComponentCard = memo(({
   noPreviewText,
   addToFavoritesText,
   removeFromFavoritesText,
+  isLoggedIn,
+  onOpenLogin,
 }: { 
   component: ComponentData, 
   onClick: (comp: ComponentData) => void,
@@ -1576,6 +1661,8 @@ const ComponentCard = memo(({
   noPreviewText: string,
   addToFavoritesText: string,
   removeFromFavoritesText: string,
+  isLoggedIn: boolean,
+  onOpenLogin: () => void,
 }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -1729,9 +1816,15 @@ const ComponentCard = memo(({
 
           {/* Button 2: Save / Bookmark (Bookmark) */}
           <a 
-            href={getAssetUrl(component.zipUrl)}
-            download
-            onClick={(e) => e.stopPropagation()}
+            href={isLoggedIn ? getAssetUrl(component.zipUrl) : undefined}
+            download={isLoggedIn}
+            onClick={(e) => {
+              e.stopPropagation();
+              if (!isLoggedIn) {
+                e.preventDefault();
+                onOpenLogin();
+              }
+            }}
             className="w-9 h-9 rounded-xl bg-zinc-900/80 text-white hover:bg-zinc-800 flex items-center justify-center cursor-pointer transition-all border-none"
             title="Download ZIP"
           >
@@ -2030,220 +2123,116 @@ function PricingModal({
 
 function ProfileModal({ 
   onClose,
-  lang 
+  lang,
+  onLogout,
+  onOpenPricing,
 }: { 
   onClose: () => void,
-  lang: Language 
+  lang: Language,
+  onLogout: () => void,
+  onOpenPricing: () => void,
 }) {
   const isPt = lang === 'pt';
+  const isEs = lang === 'es';
   const { data: sessionData } = authClient.useSession();
   const user = sessionData?.user;
-
-  const [name, setName] = useState(user?.name || '');
-  const [image, setImage] = useState(user?.image || '');
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const [isExiting, setIsExiting] = useState(false);
 
   const handleClose = () => {
     setIsExiting(true);
     setTimeout(() => {
       onClose();
-    }, 450);
+    }, 300);
   };
 
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage('');
-    setSuccessMessage('');
-    try {
-      const { error } = await authClient.updateUser({
-        name,
-        image,
-      });
-      if (error) {
-        setErrorMessage(error.message || "Erro ao atualizar perfil.");
-      } else {
-        setSuccessMessage("Perfil atualizado com sucesso!");
-      }
-    } catch (err) {
-      setErrorMessage("Erro ao salvar alterações.");
-    }
-  };
+  if (!user) return null;
 
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMessage('');
-    setSuccessMessage('');
-    try {
-      const { error } = await authClient.changePassword({
-        currentPassword,
-        newPassword,
-      });
-      if (error) {
-        setErrorMessage(error.message || "Erro ao alterar a senha.");
-      } else {
-        setSuccessMessage("Senha atualizada com sucesso!");
-        setCurrentPassword('');
-        setNewPassword('');
-      }
-    } catch (err) {
-      setErrorMessage("Erro ao atualizar senha.");
-    }
+  const t = {
+    title: isPt ? 'Minha Conta' : (isEs ? 'Mi Cuenta' : 'My Account'),
+    logout: isPt ? 'Sair da Conta' : (isEs ? 'Cerrar Sesión' : 'Sign Out'),
+    upgrade: isPt ? 'Assinar Premium' : (isEs ? 'Suscribirse a Premium' : 'Upgrade to Premium'),
+    premiumActive: isPt ? 'Assinatura Ativa' : (isEs ? 'Suscripción Activa' : 'Premium Active'),
   };
 
   return (
     <div
-      className={`fixed inset-0 z-50 bg-[#0c0c0e] overflow-y-auto flex flex-col items-center justify-start p-4 md:p-8 font-sans ${
-        isExiting ? 'animate-plans-exit' : 'animate-plans-enter'
+      className={`fixed inset-0 z-[110] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 font-sans transition-all duration-300 ${
+        isExiting ? 'opacity-0' : 'opacity-100'
       }`}
       onClick={handleClose}
     >
-      <button 
-        onClick={handleClose}
-        className="absolute top-6 right-6 p-2 rounded-full border border-zinc-800 bg-zinc-950/80 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all cursor-pointer z-50 shadow-lg"
-      >
-        <X size={18} />
-      </button>
-
       <div 
-        className="w-full max-w-2xl flex flex-col items-center gap-6 py-12 md:py-16 relative"
+        className={`w-full max-w-sm bg-[#0f0f11] rounded-[24px] p-6 shadow-[0_32px_80px_rgba(0,0,0,0.95)] relative backdrop-blur-xl transition-all duration-300 ${
+          isExiting ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
+        }`}
         onClick={e => e.stopPropagation()}
       >
-        <div 
-          className="absolute text-[120px] sm:text-[180px] md:text-[220px] font-black text-white/[0.03] tracking-tighter select-none pointer-events-none z-0 top-[10%] left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap text-center animate-slide-up-fade"
+        {/* Close Button */}
+        <button 
+          onClick={handleClose}
+          className="absolute top-4 right-4 p-1.5 rounded-full bg-zinc-950/80 text-zinc-400 hover:text-white transition-all cursor-pointer shadow-lg border-none"
         >
-          Profile
+          <X size={14} />
+        </button>
+
+        {/* User Card */}
+        <div className="flex flex-col items-center text-center space-y-4 pt-2">
+          {/* Avatar */}
+          <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-900 flex items-center justify-center shadow-inner">
+            {user.image ? (
+              <img src={user.image} alt={user.name} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-2xl font-extrabold text-white">
+                {user.name?.substring(0, 1).toUpperCase() || 'U'}
+              </span>
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="space-y-1">
+            <h4 className="text-base font-bold text-white tracking-tight">{user.name}</h4>
+            <p className="text-xs text-zinc-500">{user.email}</p>
+          </div>
+
+          {/* Badges */}
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 text-[9px] font-bold bg-zinc-900 text-zinc-400 rounded-md uppercase">
+              {user.role || 'User'}
+            </span>
+            <span className={`px-2 py-0.5 text-[9px] font-bold bg-zinc-900 rounded-md uppercase ${
+              user.plan === 'premium' ? 'text-emerald-400' : 'text-zinc-500'
+            }`}>
+              {user.plan === 'premium' ? 'Premium' : 'Free'}
+            </span>
+          </div>
         </div>
 
-        <div className="w-full bg-[#0f0f11] border border-white/10 rounded-[32px] p-6 sm:p-10 shadow-[0_32px_80px_rgba(0,0,0,0.95)] z-10 relative mt-20 backdrop-blur-xl space-y-8">
-          <div>
-            <h3 className="text-xl font-bold text-white tracking-tight">
-              {isPt ? 'Configurações de Conta' : 'Account Settings'}
-            </h3>
-            <p className="text-xs text-zinc-500 mt-1">
-              {isPt ? 'Gerencie suas credenciais e plano de assinatura' : 'Manage your credentials and subscription plan'}
-            </p>
-          </div>
-
-          {errorMessage && (
-            <div className="py-2 px-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-semibold">
-              {errorMessage}
-            </div>
-          )}
-          {successMessage && (
-            <div className="py-2 px-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-xs font-semibold">
-              {successMessage}
+        <div className="mt-6 border-t border-zinc-900/40 pt-4 space-y-2">
+          {user.plan !== 'premium' ? (
+            <button
+              onClick={() => {
+                handleClose();
+                onOpenPricing();
+              }}
+              className="w-full py-2.5 bg-white hover:bg-zinc-200 text-xs font-bold text-black rounded-xl transition-colors cursor-pointer text-center flex items-center justify-center gap-1.5 border-none"
+            >
+              <span>{t.upgrade}</span>
+            </button>
+          ) : (
+            <div className="w-full py-2 bg-zinc-950/40 text-[10px] uppercase tracking-wider font-semibold text-emerald-400 rounded-xl text-center">
+              {t.premiumActive}
             </div>
           )}
 
-          {/* User Info Overview */}
-          <div className="flex flex-col sm:flex-row items-center gap-5 p-5 bg-zinc-950/40 border border-zinc-900 rounded-2xl">
-            <div className="w-16 h-16 rounded-full overflow-hidden bg-zinc-900 border border-zinc-800 shrink-0 flex items-center justify-center">
-              {image ? (
-                <img src={image} alt={name} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-xl font-extrabold text-white">{name.substring(0, 1).toUpperCase() || 'U'}</span>
-              )}
-            </div>
-            <div className="flex-1 text-center sm:text-left space-y-1 min-w-0">
-              <h4 className="text-base font-bold text-white truncate">{name}</h4>
-              <p className="text-xs text-zinc-500 truncate">{user?.email}</p>
-              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 pt-1">
-                <span className="px-2 py-0.5 text-[9px] font-bold bg-zinc-900 text-zinc-400 border border-zinc-800 rounded-md uppercase">
-                  {user?.role || 'User'}
-                </span>
-                <span className="px-2 py-0.5 text-[9px] font-bold bg-zinc-900 text-emerald-400 border border-zinc-800 rounded-md uppercase">
-                  {user?.plan === 'premium' ? 'Premium' : 'Free'}
-                </span>
-                <span className="px-2 py-0.5 text-[9px] font-bold bg-zinc-900 text-zinc-400 border border-zinc-800 rounded-md uppercase">
-                  Status: {(user as any)?.status || 'ativo'}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Form 1: Edit Name & Avatar */}
-          <form onSubmit={handleUpdateProfile} className="space-y-4 pt-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-              {isPt ? 'Editar Perfil' : 'Edit Profile'}
-            </h4>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Nome</label>
-                <input 
-                  type="text" 
-                  value={name}
-                  onChange={e => setName(e.target.value)}
-                  className="bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-zinc-700"
-                  required
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">URL do Avatar</label>
-                <input 
-                  type="text" 
-                  value={image}
-                  onChange={e => setImage(e.target.value)}
-                  placeholder="https://..."
-                  className="bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-zinc-700"
-                />
-              </div>
-            </div>
-
-            <div className="text-right">
-              <button 
-                type="submit"
-                className="px-5 py-2 bg-white hover:bg-zinc-200 text-black text-xs font-bold rounded-xl transition-all cursor-pointer"
-              >
-                {isPt ? 'Salvar Perfil' : 'Save Profile'}
-              </button>
-            </div>
-          </form>
-
-          <hr className="border-zinc-900" />
-
-          {/* Form 2: Change Password */}
-          <form onSubmit={handleChangePassword} className="space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-              {isPt ? 'Alterar Senha' : 'Change Password'}
-            </h4>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Senha Atual</label>
-                <input 
-                  type="password" 
-                  value={currentPassword}
-                  onChange={e => setCurrentPassword(e.target.value)}
-                  className="bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-zinc-700"
-                  required
-                />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Nova Senha</label>
-                <input 
-                  type="password" 
-                  value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
-                  className="bg-zinc-950 border border-zinc-900 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-zinc-700"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="text-right">
-              <button 
-                type="submit"
-                className="px-5 py-2 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 text-xs font-bold rounded-xl transition-all cursor-pointer"
-              >
-                {isPt ? 'Alterar Senha' : 'Change Password'}
-              </button>
-            </div>
-          </form>
+          <button
+            onClick={() => {
+              handleClose();
+              onLogout();
+            }}
+            className="w-full py-2.5 bg-zinc-950/60 hover:bg-zinc-900 text-xs font-semibold text-red-400 hover:text-red-300 rounded-xl transition-colors cursor-pointer text-center border-none"
+          >
+            {t.logout}
+          </button>
         </div>
       </div>
     </div>
