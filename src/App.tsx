@@ -19,6 +19,7 @@ import Login from './components/Login';
 import { PageTransition, type PageTransitionRef } from './components/PageTransition';
 import TextReveal from './components/Copy';
 import ClaudeChatInput from './components/ui/claude-style-chat-input';
+import PromptsView from './components/PromptsView';
 import Lenis from 'lenis';
 import { gsap } from 'gsap';
 import { useGSAP } from '@gsap/react';
@@ -40,6 +41,55 @@ interface ComponentData {
   zipUrl: string;
   files: ComponentFile[];
 }
+
+interface LayersProject {
+  id: string;
+  name: string;
+  slug: string;
+  tags: string[];
+  videoUrl: string;
+  externalUrl: string;
+  isNew?: boolean;
+}
+
+const LAYERS_PROJECTS: LayersProject[] = [
+  {
+    id: 'dringle',
+    name: 'Dringle',
+    slug: 'dringle',
+    tags: ['hero', 'threejs', 'nextjs'],
+    videoUrl: '/projects/getlay.mp4',
+    externalUrl: 'https://www.getlayers.ai/#card-dringle',
+    isNew: true,
+  },
+  {
+    id: 'gring-x',
+    name: 'GringX',
+    slug: 'gring-x',
+    tags: ['hero', 'threejs', 'nextjs'],
+    videoUrl: '/projects/lay.mp4',
+    externalUrl: 'https://www.getlayers.ai/#card-gring-x',
+    isNew: true,
+  },
+  {
+    id: 'creative-studio',
+    name: 'Creative Studio',
+    slug: 'creative-studio',
+    tags: ['hero', 'threejs', 'nextjs'],
+    videoUrl: '/projects/GetLayers An AI-native library of templates.mp4',
+    externalUrl: 'https://www.getlayers.ai/#card-creative-studio',
+    isNew: true,
+  },
+  {
+    id: 'stride',
+    name: 'Stride',
+    slug: 'stride',
+    tags: ['hero', 'threejs', 'nextjs'],
+    videoUrl: '/projects/getget.mp4',
+    externalUrl: 'https://www.getlayers.ai/#card-stride',
+    isNew: true,
+  },
+];
 
 const ASSETS_BASE_URL = import.meta.env.VITE_ASSETS_BASE_URL || '';
 
@@ -144,7 +194,7 @@ export default function App() {
   }, [components]);
 
   // Tabs
-  const [activeTab, setActiveTab] = useState<'Components' | 'Debug'>('Components');
+  const [activeTab, setActiveTab] = useState<'Components' | 'Projects' | 'Prompts' | 'Debug'>('Components');
   const [debugIndex, setDebugIndex] = useState<number>(0);
   const [commandPaletteOpen, setCommandPaletteOpen] = useState<boolean>(false);
   const [paletteSearch, setPaletteSearch] = useState<string>('');
@@ -392,6 +442,7 @@ export default function App() {
       { id: 'pricing', label: lang === 'pt' ? 'Preços / Planos' : 'Pricing', action: () => { setPricingModalOpen(true); setCommandPaletteOpen(false); } },
       { id: 'all-components', label: lang === 'pt' ? 'Todos os Componentes' : 'All Components', action: () => { setActiveTab('Components'); setSelectedCategory('All'); setCommandPaletteOpen(false); } },
       { id: 'favorites', label: lang === 'pt' ? 'Favoritos' : 'Favorites', action: () => { setActiveTab('Components'); setSelectedCategory('Favorites'); setCommandPaletteOpen(false); } },
+      { id: 'prompts', label: lang === 'pt' ? 'Canivete de Prompts' : 'Prompts Toolbox', action: () => { setActiveTab('Prompts'); setSelectedComponent(null); setCommandPaletteOpen(false); } },
     ];
     if (!paletteSearch) return pagesList;
     const search = paletteSearch.toLowerCase();
@@ -732,6 +783,28 @@ export default function App() {
             >
               Biblioteca
             </button>
+            <button 
+              onClick={() => {
+                setActiveTab('Projects');
+                setSelectedComponent(null);
+              }}
+              className={`transition-colors cursor-pointer font-semibold hero-nav-link ${
+                activeTab === 'Projects' ? 'text-white' : 'hover:text-white'
+              }`}
+            >
+              Projetos
+            </button>
+            <button 
+              onClick={() => {
+                setActiveTab('Prompts');
+                setSelectedComponent(null);
+              }}
+              className={`transition-colors cursor-pointer font-semibold hero-nav-link ${
+                activeTab === 'Prompts' ? 'text-white' : 'hover:text-white'
+              }`}
+            >
+              Prompts
+            </button>
             <div className="flex items-center gap-1.5 hero-nav-link">
               <button className="hover:text-white transition-colors cursor-pointer font-normal">
                 MCP
@@ -745,7 +818,7 @@ export default function App() {
 
         {/* Center: Search Bar or Selected Component Controls (Skiper Style) */}
         {selectedComponent ? (
-          <div className="flex items-center gap-2 mx-4 select-none shrink-0">
+          <div className="flex-1 md:absolute md:left-1/2 md:-translate-x-1/2 flex items-center justify-center gap-2 mx-4 select-none shrink-0 z-10">
             {/* Close Button: Standalone Circle */}
             <button 
               onClick={() => handleSelectComponent(null)}
@@ -754,7 +827,7 @@ export default function App() {
             >
               <X size={14} />
             </button>
-
+ 
             {/* Central Capsule: Title + Copy + Code */}
             <div className="flex items-center justify-between pl-4 pr-1 h-9 rounded-full bg-[#141416] border border-zinc-900/40 shadow-md min-w-[260px]">
               <span className="text-[13px] font-normal text-zinc-300 truncate pr-3 select-none">
@@ -788,7 +861,7 @@ export default function App() {
                 </button>
               </div>
             </div>
-
+ 
             {/* Reload Button: Standalone Circle */}
             <button 
               onClick={() => {
@@ -805,13 +878,19 @@ export default function App() {
             </button>
           </div>
         ) : (
-          <div className="flex-1 max-w-[320px] hover:max-w-[345px] mx-4 relative flex items-center transition-all duration-300 ease-out hero-nav-search">
+          <div className="flex-1 w-full max-w-[320px] hover:max-w-[345px] mx-4 md:absolute md:left-1/2 md:-translate-x-1/2 relative flex items-center transition-all duration-300 ease-out hero-nav-search z-10">
             <div className="flex items-center gap-3 px-4 bg-[#141416] rounded-full h-10 w-full transition-all border border-transparent focus-within:bg-[#18181a] focus-within:border-zinc-800/40">
               <Search size={16} strokeWidth={2.5} className="text-white shrink-0" />
               <input 
                 ref={searchInputRef}
                 type="text" 
-                placeholder={selectedCategory === 'All' ? 'Pesquisar componentes' : `Pesquisar em ${selectedCategory}`}
+                placeholder={
+                  activeTab === 'Prompts' 
+                    ? (lang === 'pt' ? 'Pesquisar prompts...' : lang === 'es' ? 'Buscar prompts...' : 'Search prompts...')
+                    : selectedCategory === 'All' 
+                      ? 'Pesquisar componentes' 
+                      : `Pesquisar em ${selectedCategory}`
+                }
                 className="bg-transparent border-0 outline-none text-sm text-white placeholder-zinc-500 w-full font-normal"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -881,7 +960,19 @@ export default function App() {
           : 'px-3 md:px-4 pt-10 pb-36'
       }`}>
 
-        {activeTab === 'Debug' ? (
+        {/* ── Projects Catalog View ──────────────────────────────────────── */}
+        {activeTab === 'Projects' && !selectedComponent && (
+          <div className="space-y-6 animate-fade-in w-full">
+            {/* Projects Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-2 md:gap-x-3 gap-y-6 md:gap-y-8 mt-1">
+              {LAYERS_PROJECTS.map((project, idx) => (
+                <LayersProjectCard key={project.id} project={project} index={idx} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'Projects' ? null : activeTab === 'Debug' ? (
           (() => {
             const debugComponent = components[debugIndex];
             const debugHtmlFile = debugComponent?.files.find(f => f.name.toLowerCase() === 'index.html');
@@ -996,6 +1087,8 @@ export default function App() {
               </div>
             );
           })()
+        ) : activeTab === 'Prompts' ? (
+          <PromptsView lang={lang} />
         ) : selectedComponent ? (
           /* â”€â”€ Integrated Active Component Preview Stage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
           (() => {
@@ -1862,6 +1955,128 @@ const ComponentCard = memo(({
 });
 
 ComponentCard.displayName = 'ComponentCard';
+
+
+// LayersProjectCard Component — Card for full-project templates from Layers.ai
+const LayersProjectCard = memo(({ project, index }: { project: LayersProject; index?: number }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isClicked, setIsClicked] = useState(false);
+
+  const handleCardClick = () => {
+    setIsClicked(true);
+    window.open(project.externalUrl, '_blank');
+    setTimeout(() => setIsClicked(false), 500);
+  };
+
+  return (
+    <div 
+      className="group flex flex-col relative w-full hero-component-card"
+      style={{ animationDelay: `${(index ?? 0) * 30}ms` }}
+    >
+      {/* 1. Card Container Box (contains only the Visual Preview Box) */}
+      <div 
+        onClick={handleCardClick}
+        className="w-full aspect-[16/12] bg-[#161619] rounded-2xl p-12 sm:p-16 md:p-20 cursor-pointer flex items-center justify-center relative overflow-hidden"
+      >
+        <span className="absolute top-6 left-6 px-3 py-1 text-[9px] font-bold bg-[#1d1d21]/60 text-zinc-400 rounded-full tracking-wider select-none uppercase">
+          New
+        </span>
+        <span className="absolute top-6 right-6 px-3 py-1 text-[9px] font-bold bg-[#1d1d21]/60 text-zinc-400 rounded-full tracking-wider select-none uppercase">
+          Pro+
+        </span>
+        
+        <div className="relative w-full h-full rounded-lg overflow-hidden bg-black">
+          {project.videoUrl ? (
+            <video 
+              ref={videoRef}
+              src={project.videoUrl}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ display: isClicked ? 'none' : 'block' }}
+              muted
+              loop
+              playsInline
+              autoPlay
+              preload="auto"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center text-[10px] text-zinc-700">
+              <span>Nenhum preview disponível</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 2. Card Info Footer (sits outside the card box on the black page canvas) */}
+      <div className="flex items-end justify-between mt-4 px-2 w-full relative">
+        {/* Left Side: Title and Category */}
+        <div className="flex flex-col min-w-0 select-none">
+          <span 
+            onClick={handleCardClick}
+            className="text-[15px] font-semibold text-white cursor-pointer tracking-tight"
+          >
+            {project.name}
+          </span>
+          <span className="text-[12px] text-zinc-550 mt-1.5 font-medium">
+            Project Template
+          </span>
+        </div>
+
+        {/* Right Side: Hover Action Buttons (Exact replicate of ComponentCard) */}
+        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-auto shrink-0">
+          {/* Button 1: Favorite (Heart) */}
+          <button 
+            className="w-9 h-9 rounded-xl bg-zinc-900/80 text-white hover:bg-zinc-800 flex items-center justify-center cursor-pointer transition-all border-none"
+            title="Adicionar aos favoritos"
+            onClick={(e) => {
+              e.stopPropagation();
+              alert('Projeto adicionado aos favoritos!');
+            }}
+          >
+            <Heart size={13} fill="none" />
+          </button>
+
+          {/* Button 2: Save / Bookmark (Bookmark) */}
+          <a 
+            href={project.videoUrl}
+            download
+            className="w-9 h-9 rounded-xl bg-zinc-900/80 text-white hover:bg-zinc-800 flex items-center justify-center cursor-pointer transition-all border-none"
+            title="Download Preview"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Bookmark size={13} />
+          </a>
+
+          {/* Button 3: Live Sandbox (Eye) */}
+          <a 
+            href={project.externalUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-9 h-9 rounded-xl bg-zinc-900/80 text-white hover:bg-zinc-800 flex items-center justify-center cursor-pointer transition-all border-none"
+            title="Visualizar no Layers"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Eye size={13} />
+          </a>
+
+          {/* Button 4: Code Prompt (Code) */}
+          <button 
+            className="w-9 h-9 rounded-xl bg-zinc-900/80 text-white hover:bg-zinc-800 flex items-center justify-center cursor-pointer transition-all border-none"
+            title="Ver Prompt do Projeto"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigator.clipboard.writeText(`Crie um site baseado no template ${project.name}`);
+              alert('Prompt copiado para a área de transferência!');
+            }}
+          >
+            <Code size={13} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+LayersProjectCard.displayName = 'LayersProjectCard';
 
 
 function PricingModal({ 
