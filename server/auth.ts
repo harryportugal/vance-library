@@ -3,15 +3,12 @@ import { prismaAdapter } from "@better-auth/prisma-adapter";
 import { prisma } from "./prisma";
 import { logAuditEvent } from "./audit";
 
-// Rule 3.2: Verify secret management
-if (process.env.NODE_ENV === "production" && !process.env.BETTER_AUTH_SECRET) {
-  console.warn("[WARNING] BETTER_AUTH_SECRET is not configured in environment variables. Using fallback secret.");
-}
+const FALLBACK_SECRET = "vance-library-super-secret-key-32-chars-minimum-dev-fallback";
 
 const getBaseUrl = () => {
   if (process.env.BETTER_AUTH_URL) return process.env.BETTER_AUTH_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "https://vancelib.vercel.app";
+  if (process.env.NODE_ENV === "production" || process.env.VERCEL) return "https://vancelib.vercel.app";
+  return "http://localhost:5173";
 };
 
 export const auth = betterAuth({
@@ -19,6 +16,7 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   
+  secret: process.env.BETTER_AUTH_SECRET || FALLBACK_SECRET,
   baseURL: getBaseUrl(),
 
   trustedOrigins: [
@@ -30,18 +28,14 @@ export const auth = betterAuth({
   ],
 
   socialProviders: {
-    ...(process.env.GOOGLE_CLIENT_ID ? {
-      google: {
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-      },
-    } : {}),
-    ...(process.env.GITHUB_CLIENT_ID ? {
-      github: {
-        clientId: process.env.GITHUB_CLIENT_ID,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
-      },
-    } : {}),
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID || "",
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+    },
+    github: {
+      clientId: process.env.GITHUB_CLIENT_ID || "",
+      clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+    },
   },
 
   account: {

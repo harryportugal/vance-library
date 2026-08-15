@@ -96,19 +96,11 @@ const adminLimiter = rateLimiterFactory(1 * 60 * 1000, 15, "ADMIN_LIMITER");   /
 const profileLimiter = rateLimiterFactory(1 * 60 * 1000, 10, "PROFILE_LIMITER"); // 10 requests per minute
 const generalApiLimiter = rateLimiterFactory(1 * 60 * 1000, 100, "GENERAL_API"); // 100 requests per minute
 
-// Apply specific rate limits to auth routes BEFORE mounting Better Auth
-app.use("/api/auth/sign-in", authLimiter);
-app.use("/api/auth/sign-up", authLimiter);
-app.use("/api/auth/forget-password", authLimiter);
-app.use("/api/auth/reset-password", authLimiter);
-
 // Mount Better Auth Handler (Express 5 compatible wildcard & subpath routing)
 app.all("/api/auth/*splat", toNodeHandler(auth));
 app.all("/api/auth", toNodeHandler(auth));
 app.all("/auth/*splat", toNodeHandler(auth));
 app.all("/auth", toNodeHandler(auth));
-app.use("/api/auth", toNodeHandler(auth));
-app.use("/auth", toNodeHandler(auth));
 
 // Express body parsers (Mounted AFTER Better Auth to prevent stream consumption issues)
 app.use(express.json());
