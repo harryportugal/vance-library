@@ -12,9 +12,10 @@ import {
   Braces, 
   Languages, 
   CreditCard,
+  LayoutTemplate,
   Copy, 
   Check, 
-  Search,
+  Search, 
   X
 } from 'lucide-react';
 
@@ -30,6 +31,98 @@ interface PromptItem {
 }
 
 const PROMPTS_DATA: PromptItem[] = [
+  {
+    id: 'design-system-clone',
+    category: 'design',
+    tags: ['Design System', 'UI/UX', 'Fidelidade Visual', 'Consistência', 'Seção'],
+    title: {
+      pt: 'Clonagem com Design System',
+      en: 'Design System Section Cloning',
+      es: 'Clonación con Design System'
+    },
+    description: {
+      pt: 'Replica a estrutura da referência visual anexada aplicando com rigor o Design System, cores, fontes e estilo do projeto.',
+      en: 'Replicates an attached visual reference while strictly enforcing your project\'s design system, colors, fonts, and styling rules.',
+      es: 'Replica la referencia visual adjunta aplicando con rigor el Design System, colores, fuentes y estilo del proyecto.'
+    },
+    content: {
+      pt: `Atue como um Engenheiro Frontend Especialista em Design Systems e UI/UX de Alta Fidelidade.
+
+Sua tarefa: Você receberá uma IMAGEM/PRINT DE REFERÊNCIA de uma nova seção e o CÓDIGO DA NOSSA APLICAÇÃO. Você deve recriar a estrutura e o layout da referência com máxima fidelidade espacial, porém ADAPTANDO TUDO RIGOROSAMENTE ao Design System e aos padrões estéticos do projeto atual.
+
+DIRETRIZES FUNDAMENTAIS DE DESIGN SYSTEM:
+
+1. REGRAS VISUAIS DO PROJETO EXISTENTE:
+   - Paleta de Cores: Use exclusivamente as variáveis CSS / classes de cor do projeto atual (fundos, textos primários/secundários, acentos, degradês). Não invente cores que fujam da identidade.
+   - Tipografia & Fontes: Aplique estritamente as fontes (Google Fonts / customizadas), pesos (font-weight), tamanhos e tracking/letter-spacing já consolidados no projeto.
+   - Cantos Arredondados (Border-Radius): Se o projeto usa cantos retos (rounded-none), sutis (rounded-lg) ou orgânicos (rounded-3xl), replique rigorosamente a mesma métrica.
+   - Contornos e Bordas: Se o projeto NÃO utiliza bordas/strokes/outlines, NÃO adicione contornos. Se utiliza bordas sutis (ex: border-zinc-800/40), aplique o mesmo padrão.
+   - Elementos Decorativos & Pills: Se o projeto NÃO usa "pills", badges ou tags flutuantes, NÃO as inclua. Se o projeto usa, replique a mesma linguagem.
+   - Sombras e Acabamentos: Mantenha a mesma intensidade de sombras (box-shadow/drop-shadow), desfoques (backdrop-blur) e estilo de superfície (glassmorphism, flat, etc.).
+
+2. EXTRAÇÃO ESTRUTURAL DA REFERÊNCIA ANEXADA:
+   - Copie exatamente a disposição espacial dos blocos, alinhamento (grid/flex), distribuição dos cards, hierarquia dos títulos e posicionamento dos botões/CTAs.
+   - Mantenha a inteligência de layout da referência, traduzindo cada componente para o vocabulário visual do nosso projeto.
+
+3. CONSISTÊNCIA DE COPYWRITING & TOM DE VOZ:
+   - Escreva títulos, subtítulos, textos de apoio e botões mantendo o mesmo tom de voz, idioma e nível de sofisticação do restante do site.
+
+4. CÓDIGO LIMPO E RESPONSIVO:
+   - Entregue o componente React / Tailwind / HTML 100% responsivo (Mobile, Tablet, Desktop), limpo, modular e pronto para produção.
+
+Forneça o código completo da nova seção perfeitamente harmonizada com o restante do projeto.`,
+      en: `Act as a Senior Frontend Engineer and High-Fidelity Design Systems & UI/UX Specialist.
+
+Your task: You will receive an ATTACHED REFERENCE IMAGE/SCREENSHOT of a new section alongside our CURRENT APPLICATION CODE. Your goal is to recreate the spatial structure and layout of the reference with high fidelity, while STRICTLY ADAPTING every visual detail to our existing Design System and brand aesthetics.
+
+CRITICAL DESIGN SYSTEM GUIDELINES:
+
+1. EXISTING PROJECT VISUAL RULES:
+   - Color Palette: Exclusively use the current project's CSS variables / Tailwind color tokens (backgrounds, primary/secondary text, accents, gradients). Do not introduce rogue colors.
+   - Typography & Fonts: Strictly apply the established font families, weights, font-sizes, and letter-spacings used across the existing app.
+   - Border Radius: Match the exact corner-rounding radius used in the rest of the site (e.g. sharp, subtle rounded-lg, or rounded-3xl).
+   - Borders & Outlines: If the project DOES NOT use borders/strokes/outlines, DO NOT add them. If it uses subtle borders (e.g. border-zinc-800/40), replicate that exact style.
+   - Decorative Elements & Pills: If the project DOES NOT use badge pills or floating tags, DO NOT include them. If it does, match the exact pill styling.
+   - Shadows & Finishes: Match the exact shadow depths (box-shadow/drop-shadow), backdrop blurs, and surface finishes (flat, glassmorphism, etc.).
+
+2. STRUCTURAL EXTRACTION OF THE ATTACHED REFERENCE:
+   - Faithfully replicate the spatial layout, grid/flex structures, card arrangements, heading hierarchy, and Call-to-Action (CTA) placements from the screenshot.
+   - Translate all elements into the aesthetic grammar of our current app.
+
+3. COPYWRITING & BRAND VOICE HARMONY:
+   - Compose headings, subheadings, supporting copy, and buttons matching the brand tone, language, and theme of the existing project.
+
+4. CLEAN & RESPONSIVE CODE:
+   - Deliver clean, modular, and 100% responsive React / Tailwind / HTML code (Mobile, Tablet, Desktop) ready for production.
+
+Provide the complete code for the new section seamlessly harmonized with the rest of the project.`,
+      es: `Actúa como un Ingeniero Frontend Especialista en Design Systems y UI/UX de Alta Fidelidad.
+
+Tu misión: Recibirás una IMAGEN/CAPTURA DE REFERENCIA de una nueva sección junto con el CÓDIGO ACTUAL DE NUESTRA APLICACIÓN. Tu objetivo es recrear la estructura y el layout de la referencia con máxima fidelidad espacial, pero ADAPTANDO TODO ESTRICTAMENTE al Design System y a los patrones visuales del proyecto existente.
+
+DIRECTRICES FUNDAMENTALES DE DESIGN SYSTEM:
+
+1. REGLAS VISUALES DEL PROYECTO EXISTENTE:
+   - Paleta de Colores: Utiliza exclusivamente las variables CSS / clases de color del proyecto (fondos, textos primarios/secundarios, acentos, degradados). No introduzcas colores fuera de la identidad.
+   - Tipografía y Fuentes: Aplica estrictamente las fuentes, pesos, tamaños y espaciados de letras ya consolidados en el proyecto.
+   - Radios de Borde (Border Radius): Si el proyecto utiliza esquinas rectas (rounded-none), sutiles (rounded-lg) u orgánicas (rounded-3xl), replica exactamente la misma métrica.
+   - Contornos y Bordes: Si el proyecto NO utiliza bordes ni contornos, NO los agregues. Si utiliza bordes sutiles, aplica exactamente el mismo estilo y opacidad.
+   - Elementos Decorativos y Pills: Si el proyecto NO utiliza pills, insignias o etiquetas flotantes, NO las incluyas. Si las utiliza, replica el mismo estilo.
+   - Sombras y Acabados: Mantén la misma intensidad de sombras, desenfoques (backdrop-blur) y acabados de superficie (glassmorphism, flat, etc.).
+
+2. REPLICACIÓN ESTRUCTURAL DE LA REFERENCIA ADJUNTA:
+   - Copia fielmente la distribución espacial, alineaciones (grid/flex), tarjetas, jerarquía de títulos y botones de llamada a la acción (CTAs).
+   - Traduce cada componente al vocabulario visual de nuestro proyecto.
+
+3. COHERENCIA DE COPYWRITING Y TONO DE MARCA:
+   - Redacta títulos, subtítulos, textos de apoyo y botones manteniendo el mismo tono de voz, idioma y nivel de sofisticación del resto del sitio.
+
+4. CÓDIGO LIMPIO Y RESPONSIVO:
+   - Entrega el código en React / Tailwind / HTML 100% responsivo (Móvil, Tableta, Escritorio), limpio, modular y listo para producción.
+
+Proporciona el código completo de la nueva sección perfectamente armonizada con el resto del proyecto.`
+    }
+  },
   {
     id: 'figma-to-code',
     category: 'design',
@@ -1231,6 +1324,7 @@ export default function PromptsView({ lang }: PromptsViewProps) {
     }
     switch (category) {
       case 'design': 
+        if (id === 'design-system-clone') return <LayoutTemplate size={size} strokeWidth={strokeWidth} />;
         if (id === 'accessibility') return <Eye size={size} strokeWidth={strokeWidth} />;
         return <Paintbrush size={size} strokeWidth={strokeWidth} />;
       case 'dev': 
@@ -1262,10 +1356,22 @@ export default function PromptsView({ lang }: PromptsViewProps) {
             <>Swiss Army Knife of <span className="text-zinc-650 font-medium">Prompts</span></>
           )}
         </h1>
-        <p className="text-xs text-zinc-400 max-w-lg leading-relaxed select-none">
-          {lang === 'pt' && 'Prompts otimizados e ultra completos estruturados para você enviar aos seus agentes de IA (Claude, Cursor, Copilot) junto com layouts ou escopos do seu projeto.'}
-          {lang === 'en' && 'Highly-detailed and optimized system prompts ready for you to send to your AI agents (Claude, Cursor, Copilot) along with screenshots or code scopes.'}
-          {lang === 'es' && 'Prompts altamente detallados y optimizados listos para enviar a tus agentes de IA (Claude, Cursor, Copilot) junto con capturas de pantalla o alcances de código.'}
+        <p className="text-xs text-white max-w-lg leading-relaxed select-none">
+          {lang === 'pt' && (
+            <>
+              Prompts <span className="font-bold">otimizados e ultra completos</span> estruturados para você enviar aos seus <span className="font-bold">agentes de IA (Claude, Cursor, Copilot)</span> junto com <span className="font-semibold">layouts ou escopos</span> do seu projeto.
+            </>
+          )}
+          {lang === 'en' && (
+            <>
+              <span className="font-bold">Highly-detailed and optimized</span> system prompts ready for you to send to your <span className="font-bold">AI agents (Claude, Cursor, Copilot)</span> along with <span className="font-semibold">screenshots or code scopes</span>.
+            </>
+          )}
+          {lang === 'es' && (
+            <>
+              Prompts <span className="font-bold">altamente detallados y optimizados</span> listos para enviar a tus <span className="font-bold">agentes de IA (Claude, Cursor, Copilot)</span> junto con <span className="font-semibold">capturas de pantalla o alcances</span> de código.
+            </>
+          )}
         </p>
       </div>
 
