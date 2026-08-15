@@ -1,15 +1,13 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../prisma";
 import { PaymentGateway } from "./gateway.interface";
 import { AsaasGateway } from "./asaas.gateway";
 import { logAuditEvent } from "../audit";
 
 export class BillingEngine {
-  private readonly prisma: PrismaClient;
   private readonly gateway: PaymentGateway;
   private readonly webhookToken: string;
 
   constructor() {
-    this.prisma = new PrismaClient();
     // Easily swappable gateway instance for future scalability (SOLID/Clean Architecture)
     this.gateway = new AsaasGateway();
     this.webhookToken = process.env.ASAAS_WEBHOOK_TOKEN || "vance-library-webhook-secret-dev-fallback";

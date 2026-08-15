@@ -3,11 +3,10 @@ import cors from "cors";
 import helmet from "helmet";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./auth";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "./prisma";
 import { logAuditEvent, redactSensitiveData } from "./audit";
 import { BillingEngine } from "./billing/billing.engine";
 
-const prisma = new PrismaClient();
 const app = express();
 app.set("trust proxy", true);
 const billing = new BillingEngine();
@@ -106,6 +105,10 @@ app.use("/api/auth/reset-password", authLimiter);
 // Mount Better Auth Handler (Express 5 compatible wildcard & subpath routing)
 app.all("/api/auth/*splat", toNodeHandler(auth));
 app.all("/api/auth", toNodeHandler(auth));
+app.all("/auth/*splat", toNodeHandler(auth));
+app.all("/auth", toNodeHandler(auth));
+app.use("/api/auth", toNodeHandler(auth));
+app.use("/auth", toNodeHandler(auth));
 
 // Express body parsers (Mounted AFTER Better Auth to prevent stream consumption issues)
 app.use(express.json());

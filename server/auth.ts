@@ -1,9 +1,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "@better-auth/prisma-adapter";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "./prisma";
 import { logAuditEvent } from "./audit";
-
-const prisma = new PrismaClient();
 
 // Rule 3.2: Verify secret management
 if (process.env.NODE_ENV === "production" && !process.env.BETTER_AUTH_SECRET) {
@@ -13,7 +11,7 @@ if (process.env.NODE_ENV === "production" && !process.env.BETTER_AUTH_SECRET) {
 const getBaseUrl = () => {
   if (process.env.BETTER_AUTH_URL) return process.env.BETTER_AUTH_URL;
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:5173";
+  return "https://vancelib.vercel.app";
 };
 
 export const auth = betterAuth({
@@ -23,19 +21,27 @@ export const auth = betterAuth({
   
   baseURL: getBaseUrl(),
 
+  trustedOrigins: [
+    "https://vancelib.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
+    ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
+    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
+  ],
+
   socialProviders: {
-    ...(process.env.GOOGLE_CLIENT_ID && {
+    ...(process.env.GOOGLE_CLIENT_ID ? {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
       },
-    }),
-    ...(process.env.GITHUB_CLIENT_ID && {
+    } : {}),
+    ...(process.env.GITHUB_CLIENT_ID ? {
       github: {
         clientId: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
       },
-    }),
+    } : {}),
   },
 
   accountLinking: {
