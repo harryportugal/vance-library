@@ -44,9 +44,12 @@ export const auth = betterAuth({
     } : {}),
   },
 
-  accountLinking: {
-    enabled: true,
-    trustedProviders: ["google", "github"],
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google", "github"],
+      requireLocalEmailVerified: false,
+    },
   },
 
   // Custom User fields mappings
