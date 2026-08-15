@@ -34,12 +34,20 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
   ? process.env.ALLOWED_ORIGINS.split(",").map(o => o.trim())
   : ["http://localhost:5173", "http://localhost:3000"];
 
+if (process.env.BETTER_AUTH_URL) {
+  allowedOrigins.push(process.env.BETTER_AUTH_URL);
+}
+if (process.env.VERCEL_URL) {
+  allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
+}
+
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+    // Allow same-origin requests (no origin header), whitelisted origins, or vercel app domains
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".vercel.app")) {
       callback(null, true);
     } else {
-      callback(new Error("CORS Policy Violation: Origin not whitelisted."));
+      callback(new Error(`CORS Policy Violation: Origin ${origin} not whitelisted.`));
     }
   },
   credentials: true,
@@ -95,8 +103,9 @@ app.use("/api/auth/sign-up", authLimiter);
 app.use("/api/auth/forget-password", authLimiter);
 app.use("/api/auth/reset-password", authLimiter);
 
-// Mount Better Auth Handler (using Express 5 wildcard parameter format)
-app.all("/api/auth/{*any}", toNodeHandler(auth));
+// Mount Better Auth Handler (Express 5 compatible wildcard & subpath routing)
+app.all("/api/auth/*splat", toNodeHandler(auth));
+app.all("/api/auth", toNodeHandler(auth));
 
 // Express body parsers (Mounted AFTER Better Auth to prevent stream consumption issues)
 app.use(express.json());
