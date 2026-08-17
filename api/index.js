@@ -72546,7 +72546,7 @@ var AsaasGateway = class {
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({
-        name: user.name,
+        name: user.name || user.email.split("@")[0] || "Cliente",
         email: user.email,
         cpfCnpj: user.cpfCnpj || void 0,
         mobilePhone: user.mobilePhone || void 0,
@@ -72579,10 +72579,28 @@ var AsaasGateway = class {
       throw new Error(`Asaas API error (status ${response.status}): ${errorText}`);
     }
     const data = await response.json();
+    let invoiceUrl = data.invoiceUrl || data.paymentLink || void 0;
+    let checkoutUrl = data.bankSlipUrl || data.checkoutUrl || void 0;
+    try {
+      const paymentsRes = await fetch(`${this.apiUrl}/subscriptions/${data.id}/payments`, {
+        method: "GET",
+        headers: this.getHeaders()
+      });
+      if (paymentsRes.ok) {
+        const paymentsData = await paymentsRes.json();
+        if (paymentsData.data && paymentsData.data.length > 0) {
+          const firstPayment = paymentsData.data[0];
+          invoiceUrl = firstPayment.invoiceUrl || invoiceUrl;
+          checkoutUrl = firstPayment.bankSlipUrl || firstPayment.invoiceUrl || checkoutUrl;
+        }
+      }
+    } catch (e) {
+      console.warn("Could not fetch initial payment invoiceUrl:", e);
+    }
     return {
       gatewaySubscriptionId: data.id,
-      invoiceUrl: data.invoiceUrl || void 0,
-      checkoutUrl: data.bankSlipUrl || data.checkoutUrl || void 0
+      invoiceUrl: invoiceUrl || checkoutUrl,
+      checkoutUrl: checkoutUrl || invoiceUrl
     };
   }
   async cancelSubscription(gatewaySubscriptionId) {
@@ -72632,8 +72650,9 @@ var BillingEngine = class {
     if (!user) throw new Error("User not found.");
     const existingActive = user.subscriptions.find((s) => s.status === "ativa");
     if (existingActive) throw new Error("User already has an active subscription.");
+    const searchSlug = params.planSlug === "free" ? "basic" : params.planSlug;
     const plan = await prisma.plan.findUnique({
-      where: { slug: params.planSlug }
+      where: { slug: searchSlug }
     });
     if (!plan || !plan.ativo) throw new Error(`Plan '${params.planSlug}' is not available.`);
     let gatewayCustomerId = user.subscriptions.find((s) => s.gateway_customer_id)?.gateway_customer_id;

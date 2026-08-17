@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, X } from 'lucide-react';
+import { ArrowRight, X, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { type Language } from '../i18n';
 import { authClient } from '../lib/auth-client';
@@ -302,13 +302,41 @@ export default function Login({ lang, onLogin, onClose, initialMode = 'signin' }
     }
   };
 
+  const [isSubscribing, setIsSubscribing] = useState(false);
+
   const handleChoosePlan = async () => {
-    // Save selected plan mock metadata or execute subscription pipeline
+    if (selectedPlan === 'basic') {
+      onLogin();
+      return;
+    }
+
+    setIsSubscribing(true);
+    setErrorMessage('');
     try {
-      // Create a default free/standard mock subscription using DB relations in next steps
-      onLogin();
-    } catch (err) {
-      onLogin();
+      const res = await fetch('/api/billing/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          planSlug: selectedPlan,
+          billingType: 'PIX',
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro ao processar assinatura');
+      }
+
+      const redirectUrl = data.checkoutUrl || data.invoiceUrl;
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else {
+        onLogin();
+      }
+    } catch (err: any) {
+      console.error('[Login handleChoosePlan error]', err);
+      setErrorMessage(err.message || 'Erro ao conectar ao checkout do Asaas.');
+      setIsSubscribing(false);
     }
   };
 
@@ -976,10 +1004,20 @@ export default function Login({ lang, onLogin, onClose, initialMode = 'signin' }
                       <button
                         type="button"
                         onClick={handleChoosePlan}
+                        disabled={isSubscribing}
                         className="absolute inset-[2.5px] rounded-full bg-black flex items-center justify-center text-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.15),inset_0_-2px_4px_rgba(0,0,0,0.8)] cursor-pointer font-bold text-xs uppercase tracking-wider"
                       >
-                        <span className="mr-2">{t.continueToLibrary}</span>
-                        <ArrowRight className="w-4 h-4 text-white" />
+                        {isSubscribing ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <Loader2 className="w-4 h-4 animate-spin text-white" />
+                            <span>Redirecionando para Asaas...</span>
+                          </span>
+                        ) : (
+                          <>
+                            <span className="mr-2">{t.continueToLibrary}</span>
+                            <ArrowRight className="w-4 h-4 text-white" />
+                          </>
+                        )}
                       </button>
                     </motion.div>
                   </motion.div>

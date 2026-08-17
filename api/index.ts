@@ -320,7 +320,7 @@ export class AsaasGateway implements PaymentGateway {
       method: "POST",
       headers: this.getHeaders(),
       body: JSON.stringify({
-        name: user.name,
+        name: user.name || user.email.split("@")[0] || "Cliente",
         email: user.email,
         cpfCnpj: user.cpfCnpj || undefined,
         mobilePhone: user.mobilePhone || undefined,
@@ -358,10 +358,31 @@ export class AsaasGateway implements PaymentGateway {
     }
 
     const data = (await response.json()) as any;
+    let invoiceUrl = data.invoiceUrl || data.paymentLink || undefined;
+    let checkoutUrl = data.bankSlipUrl || data.checkoutUrl || undefined;
+
+    // Fetch first payment from subscription to get direct invoiceUrl / checkout link
+    try {
+      const paymentsRes = await fetch(`${this.apiUrl}/subscriptions/${data.id}/payments`, {
+        method: "GET",
+        headers: this.getHeaders(),
+      });
+      if (paymentsRes.ok) {
+        const paymentsData = (await paymentsRes.json()) as any;
+        if (paymentsData.data && paymentsData.data.length > 0) {
+          const firstPayment = paymentsData.data[0];
+          invoiceUrl = firstPayment.invoiceUrl || invoiceUrl;
+          checkoutUrl = firstPayment.bankSlipUrl || firstPayment.invoiceUrl || checkoutUrl;
+        }
+      }
+    } catch (e) {
+      console.warn("Could not fetch initial payment invoiceUrl:", e);
+    }
+
     return {
       gatewaySubscriptionId: data.id,
-      invoiceUrl: data.invoiceUrl || undefined,
-      checkoutUrl: data.bankSlipUrl || data.checkoutUrl || undefined,
+      invoiceUrl: invoiceUrl || checkoutUrl,
+      checkoutUrl: checkoutUrl || invoiceUrl,
     };
   }
 
@@ -422,8 +443,9 @@ export class BillingEngine {
     const existingActive = user.subscriptions.find((s: any) => s.status === "ativa");
     if (existingActive) throw new Error("User already has an active subscription.");
 
+    const searchSlug = params.planSlug === "free" ? "basic" : params.planSlug;
     const plan = await prisma.plan.findUnique({
-      where: { slug: params.planSlug },
+      where: { slug: searchSlug },
     });
 
     if (!plan || !plan.ativo) throw new Error(`Plan '${params.planSlug}' is not available.`);
