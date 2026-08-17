@@ -458,12 +458,14 @@ async function seedPlans() {
   }
 }
 
-seedPlans().then(() => {
-  if (!process.env.VERCEL) {
+if (!process.env.VERCEL) {
+  seedPlans().then(() => {
     app.listen(PORT, () => {
       console.log(`[BACKEND SERVER] Running at http://localhost:${PORT}`);
     });
-  }
-});
+  }).catch((err) => {
+    console.error("[BACKEND SERVER] Startup error:", err);
+  });
+}
 
 export { app };

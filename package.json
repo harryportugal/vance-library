@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "server": "tsx server/index.ts",
-    "build": "prisma generate && node build-components.cjs && npx tsc -b && vite build",
+    "build": "prisma generate && vite build",
+    "build:components": "node build-components.cjs",
     "postinstall": "prisma generate",
     "lint": "eslint .",
     "preview": "vite preview"

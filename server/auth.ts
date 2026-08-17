@@ -104,8 +104,6 @@ export const auth = betterAuth({
     useSecureCookies: process.env.NODE_ENV === "production",
     trustProxy: true,
   },
-  
-  secret: process.env.BETTER_AUTH_SECRET || "vance-library-super-secret-key-32-chars-minimum-dev-fallback",
 
   // Rule 5.2: Database Hooks for append-only audit trail logging
   databaseHooks: {
