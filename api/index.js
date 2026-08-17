@@ -47146,7 +47146,7 @@ var init_kysely_adapter = __esm({
   }
 });
 
-// api/index.ts
+// server/index.ts
 var import_express = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 
@@ -47692,7 +47692,7 @@ var helmet = Object.assign(
   }
 );
 
-// api/index.ts
+// server/index.ts
 import fs2 from "fs";
 import path2 from "path";
 import pg3 from "pg";
@@ -48705,7 +48705,7 @@ var PrismaPgAdapterFactory = class {
   }
 };
 
-// api/index.ts
+// server/index.ts
 import { PrismaClient } from "@prisma/client";
 
 // node_modules/better-auth/dist/utils/wildcard.mjs
@@ -72294,7 +72294,7 @@ function fromNodeHeaders(nodeHeaders) {
   return webHeaders;
 }
 
-// api/index.ts
+// server/index.ts
 var { Pool } = pg3;
 function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL;
