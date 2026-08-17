@@ -4,6 +4,7 @@ import { AsaasGateway } from "./asaas.gateway";
 import { logAuditEvent } from "../audit";
 
 export class BillingEngine {
+  private readonly prisma = prisma;
   private readonly gateway: PaymentGateway;
   private readonly webhookToken: string;
 
@@ -56,7 +57,7 @@ export class BillingEngine {
       }
 
       // Check if user already has an active subscription to prevent duplication
-      const existingActive = user.subscriptions.find(s => s.status === "ativa");
+      const existingActive = user.subscriptions.find((s: any) => s.status === "ativa");
       if (existingActive) {
         throw new Error("User already has an active subscription.");
       }
@@ -71,7 +72,7 @@ export class BillingEngine {
       }
 
       // 3. Create or reuse gateway customer ID
-      let gatewayCustomerId = user.subscriptions.find(s => s.gateway_customer_id)?.gateway_customer_id;
+      let gatewayCustomerId = user.subscriptions.find((s: any) => s.gateway_customer_id)?.gateway_customer_id;
       if (!gatewayCustomerId) {
         await this.logBilling(`Creating gateway customer for user: ${user.email}`, "info");
         gatewayCustomerId = await this.gateway.createCustomer({

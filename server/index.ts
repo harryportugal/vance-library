@@ -1,7 +1,7 @@
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
-import { toNodeHandler } from "better-auth/node";
+import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
 import { auth } from "./auth";
 import { prisma } from "./prisma";
 import { logAuditEvent, redactSensitiveData } from "./audit";
@@ -118,7 +118,7 @@ export interface AuthenticatedRequest extends Request {
 const requireSession = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
     const session = await auth.api.getSession({
-      headers: req.headers,
+      headers: fromNodeHeaders(req.headers),
     });
 
     if (!session) {
@@ -236,7 +236,7 @@ app.post("/api/user/favorites", requireSession, profileLimiter, async (req: Auth
 app.delete("/api/user/favorites/:componentId", requireSession, profileLimiter, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const userId = req.session!.user.id;
-    const { componentId } = req.params;
+    const componentId = req.params.componentId as string;
 
     await prisma.favorite.delete({
       where: {
@@ -292,7 +292,7 @@ app.get("/api/premium/content", requireSession, requirePremium, generalApiLimite
 app.put("/api/admin/users/:userId/role", requireSession, requireAdmin, adminLimiter, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     const { role } = req.body;
-    const targetUserId = req.params.userId;
+    const targetUserId = req.params.userId as string;
 
     if (!role || (role !== "user" && role !== "admin")) {
       res.status(400).json({ error: "Invalid role value (must be 'user' or 'admin')" });
