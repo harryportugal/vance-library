@@ -824,7 +824,7 @@ export default function App() {
 
         {/* Center: Search Bar or Selected Component Controls (Skiper Style) */}
         {selectedComponent ? (
-          <div className="flex-1 md:absolute md:left-1/2 md:-translate-x-1/2 flex items-center justify-center gap-2 mx-4 select-none shrink-0 z-10">
+          <div className="md:absolute md:left-1/2 md:-translate-x-1/2 md:top-1/2 md:-translate-y-1/2 flex items-center justify-center gap-2 mx-4 md:mx-0 select-none shrink-0 z-10 pointer-events-auto">
             {/* Close Button: Standalone Circle */}
             <button 
               onClick={() => handleSelectComponent(null)}
@@ -884,32 +884,34 @@ export default function App() {
             </button>
           </div>
         ) : (
-          <div className="flex-1 w-full max-w-[320px] hover:max-w-[345px] mx-4 md:absolute md:left-1/2 md:-translate-x-1/2 relative flex items-center transition-all duration-300 ease-out hero-nav-search z-10">
-            <div className="flex items-center gap-3 px-4 bg-[#141416] rounded-full h-10 w-full transition-all border border-transparent focus-within:bg-[#18181a] focus-within:border-zinc-800/40">
-              <Search size={16} strokeWidth={2.5} className="text-white shrink-0" />
-              <input 
-                ref={searchInputRef}
-                type="text" 
-                placeholder={
-                  activeTab === 'Prompts' 
-                    ? (lang === 'pt' ? 'Pesquisar prompts...' : lang === 'es' ? 'Buscar prompts...' : 'Search prompts...')
-                    : selectedCategory === 'All' 
-                      ? 'Pesquisar componentes' 
-                      : `Pesquisar em ${selectedCategory}`
-                }
-                className="bg-transparent border-0 outline-none text-sm text-white placeholder-zinc-500 w-full font-normal"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              {searchTerm ? (
-                <button onClick={() => setSearchTerm('')} className="text-zinc-500 hover:text-white cursor-pointer shrink-0">
-                  <X size={13} />
-                </button>
-              ) : (
-                <div className="w-[22px] h-[22px] bg-[#1c1c1f] text-[#6e6e73] rounded-[5px] flex items-center justify-center text-[10px] font-sans select-none shrink-0 font-medium">
-                  F
-                </div>
-              )}
+          <div className="md:absolute md:left-1/2 md:-translate-x-1/2 md:top-1/2 md:-translate-y-1/2 flex-1 md:flex-initial w-full max-w-[320px] hover:max-w-[345px] mx-4 md:mx-0 flex items-center justify-center transition-all duration-300 ease-out z-10 pointer-events-none">
+            <div className="w-full pointer-events-auto hero-nav-search">
+              <div className="flex items-center gap-3 px-4 bg-[#141416] rounded-full h-10 w-full transition-all focus-within:bg-[#18181a]">
+                <Search size={16} strokeWidth={2.5} className="text-white shrink-0" />
+                <input 
+                  ref={searchInputRef}
+                  type="text" 
+                  placeholder={
+                    activeTab === 'Prompts' 
+                      ? (lang === 'pt' ? 'Pesquisar prompts...' : lang === 'es' ? 'Buscar prompts...' : 'Search prompts...')
+                      : selectedCategory === 'All' 
+                        ? 'Pesquisar componentes' 
+                        : `Pesquisar em ${selectedCategory}`
+                  }
+                  className="bg-transparent border-0 outline-none text-sm text-white placeholder-zinc-500 w-full font-normal"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                {searchTerm ? (
+                  <button onClick={() => setSearchTerm('')} className="text-zinc-500 hover:text-white cursor-pointer shrink-0">
+                    <X size={13} />
+                  </button>
+                ) : (
+                  <div className="w-[22px] h-[22px] bg-[#1c1c1f] text-[#6e6e73] rounded-[5px] flex items-center justify-center text-[10px] font-sans select-none shrink-0 font-medium">
+                    F
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -2103,7 +2105,6 @@ function PricingModal({
 }) {
   const isPt = lang === 'pt';
   const isEs = lang === 'es';
-  const [billedYearly, setBilledYearly] = useState(false);
   const [isExiting, setIsExiting] = useState(false);
   const { data: sessionData } = authClient.useSession();
   const [subscribingPlan, setSubscribingPlan] = useState<string | null>(null);
@@ -2176,6 +2177,7 @@ function PricingModal({
       id: 'free',
       name: isPt ? 'Plano Grátis' : (isEs ? 'Plan Gratis' : 'Free Plan'),
       price: isPt ? 'Grátis' : (isEs ? 'Gratis' : 'Free'),
+      period: isPt ? 'Acesso inicial' : (isEs ? 'Acceso inicial' : 'Free access'),
       features: [
         isPt ? 'Acesso a todos os componentes básicos' : (isEs ? 'Acceso a componentes básicos' : 'Access to basic components'),
         isPt ? 'Visualização interativa das animações' : (isEs ? 'Previsualización interactiva' : 'Interactive animation preview'),
@@ -2186,34 +2188,37 @@ function PricingModal({
       recommended: false,
     },
     {
-      id: 'standard',
-      name: isPt ? 'Plano Padrão' : (isEs ? 'Plan Estándar' : 'Standard Plan'),
-      price: isPt 
-        ? (billedYearly ? 'R$ 39,90/m' : 'R$ 49,90/m') 
-        : (billedYearly ? '$7.99/m' : '$9.99/m'),
+      id: 'trimestral',
+      name: isPt ? 'Acesso 3 Meses' : (isEs ? 'Acceso 3 Meses' : '3 Months Access'),
+      price: 'R$ 397',
+      period: isPt ? 'Pagamento único / 3 meses' : (isEs ? 'Pago único / 3 meses' : 'Single payment / 3 months'),
+      badge: isPt ? 'Trimestral' : (isEs ? 'Trimestral' : 'Quarterly'),
       features: [
+        isPt ? 'Acesso completo por 3 meses' : (isEs ? 'Acceso completo por 3 meses' : 'Full access for 3 months'),
         isPt ? 'Todo o conteúdo do plano Grátis' : (isEs ? 'Todo lo del plan Gratis' : 'Everything in Free plan'),
         isPt ? 'Cópia de prompts avançados de IA' : (isEs ? 'Copia de prompts avanzados de IA' : 'Copy advanced AI prompts'),
         isPt ? 'Códigos Tailwind e JavaScript completos' : (isEs ? 'Códigos Tailwind y JavaScript completos' : 'Full Tailwind & JavaScript code'),
         isPt ? 'Componentes interativos avançados' : (isEs ? 'Componentes interactivos avanzados' : 'Advanced interactive components'),
+        isPt ? 'Download de arquivos ZIP e assets' : (isEs ? 'Descarga de archivos ZIP y assets' : 'Download ZIP files & assets'),
         isPt ? 'Suporte prioritário por e-mail' : (isEs ? 'Soporte prioritario por correo' : 'Priority email support'),
       ],
-      recommended: true,
+      recommended: false,
     },
     {
-      id: 'pro',
-      name: isPt ? 'Plano Pro' : (isEs ? 'Plan Pro' : 'Pro Plan'),
-      price: isPt 
-        ? (billedYearly ? 'R$ 79,90/m' : 'R$ 99,90/m') 
-        : (billedYearly ? '$15.99/m' : '$19.99/m'),
+      id: 'vitalicio',
+      name: isPt ? 'Acesso Vitalício' : (isEs ? 'Acceso Vitalicio' : 'Lifetime Access'),
+      price: 'R$ 897',
+      period: isPt ? 'Pagamento único / Acesso Para Sempre' : (isEs ? 'Pago único / Acceso Para Siempre' : 'One-time payment / Forever Access'),
+      badge: isPt ? 'Melhor Valor • Lifetime' : (isEs ? 'Mejor Valor • Lifetime' : 'Best Value • Lifetime'),
       features: [
-        isPt ? 'Todo o conteúdo do plano Padrão' : (isEs ? 'Todo lo del plan Estándar' : 'Everything in Standard plan'),
-        isPt ? 'Download ilimitado de arquivos ZIP' : (isEs ? 'Descarga ilimitada de archivos ZIP' : 'Unlimited ZIP file downloads'),
-        isPt ? 'Acesso aos componentes 3D e WebGL' : (isEs ? 'Acceso a componentes 3D y WebGL' : 'Access to 3D & WebGL components'),
-        isPt ? 'Animações complexas (Three.js/GSAP)' : (isEs ? 'Animaciones complejas (Three.js/GSAP)' : 'Complex animations (Three.js/GSAP)'),
+        isPt ? 'Acesso Vitalício sem mensalidades' : (isEs ? 'Acceso vitalicio sin mensualidades' : 'Lifetime access, no monthly fees'),
+        isPt ? 'Todas as atualizações futuras inclusas' : (isEs ? 'Todas las actualizaciones futuras' : 'All future updates included'),
+        isPt ? 'Todos os componentes 3D, WebGL e Three.js' : (isEs ? 'Todos los componentes 3D y WebGL' : 'All 3D, WebGL & Three.js components'),
+        isPt ? 'Download ilimitado de ZIPs e projetos' : (isEs ? 'Descarga ilimitada de proyectos' : 'Unlimited ZIP & project downloads'),
         isPt ? 'Licença comercial completa para projetos' : (isEs ? 'Licencia comercial completa' : 'Full commercial project license'),
+        isPt ? 'Suporte VIP prioritário' : (isEs ? 'Soporte VIP prioritario' : 'VIP Priority support'),
       ],
-      recommended: false,
+      recommended: true,
     }
   ];
 
@@ -2227,7 +2232,7 @@ function PricingModal({
       {/* Absolute Close Button */}
       <button 
         onClick={handleClose}
-        className="absolute top-6 right-6 p-2 rounded-full border border-zinc-800 bg-zinc-950/80 text-zinc-400 hover:text-white hover:border-zinc-700 transition-all cursor-pointer z-50 shadow-lg"
+        className="absolute top-6 right-6 p-2.5 rounded-full bg-zinc-900/90 text-zinc-400 hover:text-white transition-all cursor-pointer z-50 shadow-lg"
         title={isPt ? 'Fechar' : (isEs ? 'Cerrar' : 'Close')}
       >
         <X size={18} />
@@ -2246,28 +2251,28 @@ function PricingModal({
 
         {/* Error Banner */}
         {errorMsg && (
-          <div className="w-full max-w-md bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-2xl text-xs flex items-center gap-2.5 z-20 animate-scale-in">
+          <div className="w-full max-w-md bg-red-500/15 text-red-400 px-4 py-3 rounded-2xl text-xs flex items-center gap-2.5 z-20 animate-scale-in shadow-lg">
             <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
-            <span className="flex-1">{errorMsg}</span>
-            <button onClick={() => setErrorMsg(null)} className="text-red-400 hover:text-white">
+            <span className="flex-1 font-medium">{errorMsg}</span>
+            <button onClick={() => setErrorMsg(null)} className="text-red-400 hover:text-white cursor-pointer">
               <X size={14} />
             </button>
           </div>
         )}
 
-        {/* Payment Method Selector */}
-        <div className="z-10 flex flex-col sm:flex-row items-center gap-3 bg-zinc-900/60 p-1.5 rounded-full border border-zinc-800/80 backdrop-blur-md">
+        {/* Payment Method Selector (Borderless) */}
+        <div className="z-10 flex flex-col sm:flex-row items-center gap-3 bg-[#131316] p-1.5 rounded-full shadow-lg">
           <span className="text-[11px] font-bold text-zinc-400 px-3 uppercase tracking-wider">
             {isPt ? 'Pagamento Asaas:' : 'Payment Method:'}
           </span>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => setBillingType('PIX')}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 billingType === 'PIX'
-                  ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                  ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
               }`}
             >
               <QrCode size={13} />
@@ -2276,10 +2281,10 @@ function PricingModal({
             <button
               type="button"
               onClick={() => setBillingType('CREDIT_CARD')}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 billingType === 'CREDIT_CARD'
-                  ? 'bg-white text-black shadow-lg'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                  ? 'bg-white text-black shadow-md'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
               }`}
             >
               <CreditCard size={13} />
@@ -2288,10 +2293,10 @@ function PricingModal({
             <button
               type="button"
               onClick={() => setBillingType('BOLETO')}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 billingType === 'BOLETO'
-                  ? 'bg-zinc-700 text-white shadow-lg'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                  ? 'bg-zinc-700 text-white shadow-md'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
               }`}
             >
               <FileText size={13} />
@@ -2300,7 +2305,7 @@ function PricingModal({
           </div>
         </div>
 
-        {/* Pricing Cards Grid */}
+        {/* Pricing Cards Grid (Borderless) */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full z-10 relative">
           {plans.map((plan, index) => {
             const cardDelay = index * 120 + 200;
@@ -2315,33 +2320,47 @@ function PricingModal({
                   WebkitBackfaceVisibility: plan.recommended ? 'hidden' : undefined,
                   backfaceVisibility: plan.recommended ? 'hidden' : undefined,
                 }}
-                className={`rounded-[32px] border p-8 flex flex-col justify-between min-h-[500px] transition-all relative animate-slide-up-fade ${
+                className={`rounded-[32px] p-8 flex flex-col justify-between min-h-[520px] transition-all relative animate-slide-up-fade ${
                   plan.recommended
-                    ? 'bg-[#0f0f11] border-white/20 shadow-[0_32px_80px_rgba(0,0,0,0.95)]'
-                    : 'bg-[#0f0f11]/45 border-zinc-900/60 shadow-[0_20px_50px_rgba(0,0,0,0.75)]'
-                } hover:border-zinc-750/90 transition-colors duration-300 backdrop-blur-xl`}
+                    ? 'bg-[#18181c] shadow-[0_30px_70px_rgba(0,0,0,0.95)]'
+                    : 'bg-[#111114] shadow-[0_15px_40px_rgba(0,0,0,0.6)]'
+                }`}
               >
                 <div>
                   {/* Plan Header */}
                   <div className="space-y-1">
-                    <span 
-                      style={{ animationDelay: `${cardDelay + 50}ms` }}
-                      className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block animate-slide-up-fade"
-                    >
-                      {plan.name}
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span 
+                        style={{ animationDelay: `${cardDelay + 50}ms` }}
+                        className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider block animate-slide-up-fade"
+                      >
+                        {plan.name}
+                      </span>
+                      {plan.badge && (
+                        <span className={`text-[9px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                          plan.recommended ? 'bg-white text-black shadow-sm' : 'bg-zinc-800 text-zinc-300'
+                        }`}>
+                          {plan.badge}
+                        </span>
+                      )}
+                    </div>
                     <div 
                       style={{ animationDelay: `${cardDelay + 100}ms` }}
                       className="text-4xl font-extrabold text-white tracking-tight pt-2 animate-slide-up-fade"
                     >
                       {plan.price}
                     </div>
+                    {plan.period && (
+                      <p className="text-[11px] text-zinc-500 font-medium">
+                        {plan.period}
+                      </p>
+                    )}
                   </div>
 
-                  {/* Divider Line */}
+                  {/* Divider */}
                   <div 
                     style={{ animationDelay: `${cardDelay + 120}ms` }}
-                    className="h-px bg-zinc-900/60 my-6 animate-slide-up-fade" 
+                    className="h-px bg-zinc-800/40 my-6 animate-slide-up-fade" 
                   />
 
                   {/* Features List */}
@@ -2352,9 +2371,9 @@ function PricingModal({
                         <li 
                           key={fIdx} 
                           style={{ animationDelay: `${featureDelay}ms` }}
-                          className="flex items-center gap-3 text-xs text-zinc-400 animate-slide-up-fade"
+                          className="flex items-center gap-3 text-xs text-zinc-300 animate-slide-up-fade"
                         >
-                          <div className="w-5 h-5 rounded-full bg-zinc-900/60 border border-zinc-800/80 flex items-center justify-center shrink-0">
+                          <div className="w-5 h-5 rounded-full bg-zinc-800/80 flex items-center justify-center shrink-0">
                             <Check size={10} className="text-white" />
                           </div>
                           <span className="leading-relaxed">{feature}</span>
@@ -2364,7 +2383,7 @@ function PricingModal({
                   </ul>
                 </div>
 
-                {/* Action Button */}
+                {/* Action Button (Borderless) */}
                 <div 
                   style={{ animationDelay: `${cardDelay + 150 + plan.features.length * 45}ms` }}
                   className="mt-8 animate-slide-up-fade"
@@ -2374,8 +2393,10 @@ function PricingModal({
                     disabled={subscribingPlan !== null}
                     className={`w-full py-3.5 text-xs font-bold rounded-full transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 ${
                       plan.recommended
-                        ? 'bg-white hover:bg-zinc-200 text-black'
-                        : 'bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800'
+                        ? 'bg-white hover:bg-zinc-200 text-black shadow-white/10'
+                        : plan.id === 'free'
+                          ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'
+                          : 'bg-zinc-800 hover:bg-zinc-700 text-white'
                     } ${subscribingPlan !== null && !isProcessingThis ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {isProcessingThis ? (
@@ -2395,53 +2416,11 @@ function PricingModal({
           })}
         </div>
 
-        {/* Bottom Area: Toggle & Connector Pill */}
-        <div className="w-full flex flex-col items-center gap-12 z-10 relative">
-          
-          {/* Billing Cycle Toggle */}
-          <div 
-            style={{ animationDelay: '600ms' }}
-            className="flex items-center gap-3 select-none self-start md:self-auto px-4 mt-4 animate-slide-up-fade"
-          >
-            <button
-              onClick={() => setBilledYearly(prev => !prev)}
-              className={`w-10 h-6 rounded-full p-0.5 transition-colors duration-200 focus:outline-none cursor-pointer flex items-center ${
-                billedYearly ? 'bg-white' : 'bg-zinc-800'
-              }`}
-            >
-              <div
-                className={`w-5 h-5 rounded-full transition-transform duration-200 ${
-                  billedYearly ? 'translate-x-4 bg-black' : 'translate-x-0 bg-zinc-400'
-                }`}
-              />
-            </button>
-            <span className="text-xs text-zinc-400 font-semibold tracking-wide">
-              {isPt ? 'Faturamento Anual (Desconto)' : (isEs ? 'Facturación Anual' : 'Billed Yearly (Discount)')}
-            </span>
+        {/* Bottom Plans Badge */}
+        <div className="w-full flex flex-col items-center z-10 relative mt-4">
+          <div className="px-5 py-2 rounded-full bg-[#131316] text-zinc-400 text-[11px] uppercase font-bold tracking-widest shadow-md">
+            {isPt ? 'Garantia e Segurança Vance Library' : 'Vance Library Security Guarantee'}
           </div>
-
-          {/* Connection Lines & Badge (Desktop Only) */}
-          <div 
-            style={{ animationDelay: '700ms' }}
-            className="hidden md:flex flex-col items-center w-full relative mt-4 animate-slide-up-fade"
-          >
-            <div className="w-full max-w-4xl h-px bg-zinc-900 relative">
-              <div className="w-px h-8 bg-zinc-900 absolute -top-8 left-[16.6%]"></div>
-              <div className="w-px h-8 bg-zinc-900 absolute -top-8 left-[50%]"></div>
-              <div className="w-px h-8 bg-zinc-900 absolute -top-8 left-[83.3%]"></div>
-              <div className="w-px h-8 bg-zinc-900 absolute top-0 left-1/2 -translate-x-1/2"></div>
-            </div>
-            <div className="px-4 py-1.5 rounded-full border border-zinc-800/85 bg-zinc-950/80 text-zinc-550 text-[10px] uppercase font-bold tracking-widest mt-8 shadow-md">
-              {isPt ? 'Planos' : (isEs ? 'Planes' : 'Plans')}
-            </div>
-          </div>
-
-          {/* Mobile Badge (Simplified) */}
-          <div 
-            style={{ animationDelay: '700ms' }}
-            className="flex md:hidden px-4 py-1.5 rounded-full border border-zinc-800/80 bg-zinc-950/80 text-zinc-550 text-[10px] uppercase font-bold tracking-widest mt-2 shadow-md animate-slide-up-fade"
-          >
-            {isPt ? 'Planos' : (isEs ? 'Planes' : 'Plans')}
         </div>
 
       </div>

@@ -43,12 +43,12 @@ const loginTranslations = {
     basicPlanName: "Plano Básico",
     basicPlanPrice: "Grátis",
     basicPlanDesc: "Acesso básico às visualizações de componentes",
-    standardPlanName: "Plano Padrão",
-    standardPlanPrice: "R$ 49,90/mês",
-    standardPlanDesc: "Cópia de prompts ilimitada e suporte prioritário",
-    proPlanName: "Plano Pro",
-    proPlanPrice: "R$ 99,90/mês",
-    proPlanDesc: "Acesso total aos componentes 3D e WebGL premium",
+    standardPlanName: "Acesso 3 Meses",
+    standardPlanPrice: "R$ 397",
+    standardPlanDesc: "Acesso completo por 3 meses a todos os prompts e componentes",
+    proPlanName: "Acesso Vitalício",
+    proPlanPrice: "R$ 897",
+    proPlanDesc: "Acesso vitalício sem mensalidades com todas atualizações inclusas",
     recommended: "Recomendado",
     continueToLibrary: "Continuar para a Biblioteca",
     backToRegister: "Voltar para o cadastro"
@@ -84,12 +84,12 @@ const loginTranslations = {
     basicPlanName: "Basic Plan",
     basicPlanPrice: "Free",
     basicPlanDesc: "Basic access to component previews",
-    standardPlanName: "Standard Plan",
-    standardPlanPrice: "$9.99/mo",
-    standardPlanDesc: "Unlimited prompt copies and priority support",
-    proPlanName: "Pro Plan",
-    proPlanPrice: "$19.99/mo",
-    proPlanDesc: "Full access to premium 3D and WebGL layouts",
+    standardPlanName: "3 Months Access",
+    standardPlanPrice: "R$ 397",
+    standardPlanDesc: "Full access for 3 months to all components and prompts",
+    proPlanName: "Lifetime Access",
+    proPlanPrice: "R$ 897",
+    proPlanDesc: "Lifetime access with no recurring fees and all updates",
     recommended: "Recommended",
     continueToLibrary: "Continue to Library",
     backToRegister: "Back to sign up"
@@ -125,12 +125,12 @@ const loginTranslations = {
     basicPlanName: "Plan Básico",
     basicPlanPrice: "Gratis",
     basicPlanDesc: "Acceso básico a las vistas previas de componentes",
-    standardPlanName: "Plan Estándar",
-    standardPlanPrice: "$9.99/mes",
-    standardPlanDesc: "Copias ilimitadas de prompts y soporte prioritario",
-    proPlanName: "Plan Pro",
-    proPlanPrice: "$19.99/mes",
-    proPlanDesc: "Acceso completo a componentes 3D y WebGL premium",
+    standardPlanName: "Acceso 3 Meses",
+    standardPlanPrice: "R$ 397",
+    standardPlanDesc: "Acceso completo por 3 meses a todos los prompts",
+    proPlanName: "Acceso Vitalicio",
+    proPlanPrice: "R$ 897",
+    proPlanDesc: "Acceso vitalicio sin cuotas mensuales y todas las actualizaciones",
     recommended: "Recomendado",
     continueToLibrary: "Continuar a la Biblioteca",
     backToRegister: "Volver al registro"
@@ -889,17 +889,17 @@ export default function Login({ lang, onLogin, onClose, initialMode = 'signin' }
                     {/* Basic Plan */}
                     <motion.div
                       variants={itemVariants}
-                      whileHover={{ y: -3 }}
+                      whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.985 }}
                       onClick={() => setSelectedPlan('basic')}
-                      className={`p-4 border-2 rounded-[1.5rem] flex items-center gap-4 cursor-pointer transition-all duration-300 relative ${
+                      className={`p-4 rounded-[1.5rem] flex items-center gap-4 cursor-pointer transition-all duration-300 relative ${
                         selectedPlan === 'basic'
-                          ? 'border-zinc-950 bg-zinc-50/30 shadow-[0_4px_20px_rgba(0,0,0,0.05)]'
-                          : 'border-zinc-200 bg-white hover:bg-zinc-50/20'
+                          ? 'bg-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.08)]'
+                          : 'bg-zinc-50 hover:bg-zinc-100/60'
                       }`}
                     >
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-300 ${
-                        selectedPlan === 'basic' ? 'border-zinc-950 bg-zinc-950' : 'border-zinc-300 bg-white'
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${
+                        selectedPlan === 'basic' ? 'bg-zinc-950 text-white' : 'bg-zinc-200'
                       }`}>
                         {selectedPlan === 'basic' && (
                           <div className="w-1.5 h-1.5 rounded-full bg-white animate-scale-in" />
@@ -920,20 +920,20 @@ export default function Login({ lang, onLogin, onClose, initialMode = 'signin' }
                       </div>
                     </motion.div>
 
-                    {/* Standard Plan (Recommended) */}
+                    {/* Standard Plan (3 Meses) */}
                     <motion.div
                       variants={itemVariants}
-                      whileHover={{ y: -3 }}
+                      whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.985 }}
                       onClick={() => setSelectedPlan('standard')}
-                      className={`p-4 border-2 rounded-[1.5rem] flex items-center gap-4 cursor-pointer transition-all duration-300 relative ${
+                      className={`p-4 rounded-[1.5rem] flex items-center gap-4 cursor-pointer transition-all duration-300 relative ${
                         selectedPlan === 'standard'
-                          ? 'border-zinc-950 bg-zinc-50/30 shadow-[0_4px_20px_rgba(0,0,0,0.05)]'
-                          : 'border-zinc-200 bg-white hover:bg-zinc-50/20'
+                          ? 'bg-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.08)]'
+                          : 'bg-zinc-50 hover:bg-zinc-100/60'
                       }`}
                     >
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-300 ${
-                        selectedPlan === 'standard' ? 'border-zinc-950 bg-zinc-950' : 'border-zinc-300 bg-white'
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${
+                        selectedPlan === 'standard' ? 'bg-zinc-950 text-white' : 'bg-zinc-200'
                       }`}>
                         {selectedPlan === 'standard' && (
                           <div className="w-1.5 h-1.5 rounded-full bg-white animate-scale-in" />
@@ -943,8 +943,8 @@ export default function Login({ lang, onLogin, onClose, initialMode = 'signin' }
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">{t.standardPlanName}</span>
-                          <span className="text-[8px] font-bold px-2 py-0.5 rounded-full bg-zinc-900 text-white uppercase tracking-widest leading-none">
-                            {t.recommended}
+                          <span className="text-[8px] font-bold px-2 py-0.5 rounded-full bg-zinc-800 text-white uppercase tracking-widest leading-none">
+                            3 Meses
                           </span>
                         </div>
                         <p className="text-[11px] text-zinc-500 mt-0.5 leading-tight">
@@ -957,20 +957,20 @@ export default function Login({ lang, onLogin, onClose, initialMode = 'signin' }
                       </div>
                     </motion.div>
 
-                    {/* Pro Plan */}
+                    {/* Pro Plan (Vitalicio) */}
                     <motion.div
                       variants={itemVariants}
-                      whileHover={{ y: -3 }}
+                      whileHover={{ y: -2 }}
                       whileTap={{ scale: 0.985 }}
                       onClick={() => setSelectedPlan('pro')}
-                      className={`p-4 border-2 rounded-[1.5rem] flex items-center gap-4 cursor-pointer transition-all duration-300 relative ${
+                      className={`p-4 rounded-[1.5rem] flex items-center gap-4 cursor-pointer transition-all duration-300 relative ${
                         selectedPlan === 'pro'
-                          ? 'border-zinc-950 bg-zinc-50/30 shadow-[0_4px_20px_rgba(0,0,0,0.05)]'
-                          : 'border-zinc-200 bg-white hover:bg-zinc-50/20'
+                          ? 'bg-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.08)]'
+                          : 'bg-zinc-50 hover:bg-zinc-100/60'
                       }`}
                     >
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all duration-300 ${
-                        selectedPlan === 'pro' ? 'border-zinc-950 bg-zinc-950' : 'border-zinc-300 bg-white'
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${
+                        selectedPlan === 'pro' ? 'bg-zinc-950 text-white' : 'bg-zinc-200'
                       }`}>
                         {selectedPlan === 'pro' && (
                           <div className="w-1.5 h-1.5 rounded-full bg-white animate-scale-in" />
@@ -980,6 +980,9 @@ export default function Login({ lang, onLogin, onClose, initialMode = 'signin' }
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-zinc-900 uppercase tracking-wider">{t.proPlanName}</span>
+                          <span className="text-[8px] font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white uppercase tracking-widest leading-none">
+                            Lifetime
+                          </span>
                         </div>
                         <p className="text-[11px] text-zinc-500 mt-0.5 leading-tight">
                           {t.proPlanDesc}

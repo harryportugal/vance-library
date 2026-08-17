@@ -289,7 +289,7 @@ export interface PaymentGateway {
   createSubscription(params: {
     gatewayCustomerId: string;
     value: number;
-    cycle: "WEEKLY" | "MONTHLY" | "YEARLY";
+    cycle: "WEEKLY" | "BIWEEKLY" | "MONTHLY" | "QUARTERLY" | "SEMIANNUALLY" | "YEARLY";
     billingType: "BOLETO" | "PIX" | "CREDIT_CARD";
     nextDueDate: Date;
     description: string;
@@ -443,10 +443,36 @@ export class BillingEngine {
     const existingActive = user.subscriptions.find((s: any) => s.status === "ativa");
     if (existingActive) throw new Error("User already has an active subscription.");
 
-    const searchSlug = params.planSlug === "free" ? "basic" : params.planSlug;
-    const plan = await prisma.plan.findUnique({
+    let searchSlug = params.planSlug;
+    if (searchSlug === "free") searchSlug = "basic";
+    if (searchSlug === "standard" || searchSlug === "3meses" || searchSlug === "quarterly") searchSlug = "trimestral";
+    if (searchSlug === "pro" || searchSlug === "lifetime") searchSlug = "vitalicio";
+
+    let plan = await prisma.plan.findUnique({
       where: { slug: searchSlug },
     });
+
+    if (!plan) {
+      if (searchSlug === "trimestral") {
+        plan = await prisma.plan.upsert({
+          where: { slug: "trimestral" },
+          update: { preco: 397.00, nome: "Acesso 3 Meses", intervalo: "trimestral", ativo: true },
+          create: { nome: "Acesso 3 Meses", slug: "trimestral", preco: 397.00, intervalo: "trimestral", descricao: "Acesso completo por 3 meses a todos os prompts e componentes" },
+        });
+      } else if (searchSlug === "vitalicio") {
+        plan = await prisma.plan.upsert({
+          where: { slug: "vitalicio" },
+          update: { preco: 897.00, nome: "Acesso Vitalício", intervalo: "vitalicio", ativo: true },
+          create: { nome: "Acesso Vitalício", slug: "vitalicio", preco: 897.00, intervalo: "vitalicio", descricao: "Acesso vitalício sem mensalidades a toda a biblioteca" },
+        });
+      } else {
+        plan = await prisma.plan.upsert({
+          where: { slug: "basic" },
+          update: { preco: 0.00, nome: "Plano Grátis", intervalo: "mensal", ativo: true },
+          create: { nome: "Plano Grátis", slug: "basic", preco: 0.00, intervalo: "mensal", descricao: "Acesso básico às visualizações de componentes" },
+        });
+      }
+    }
 
     if (!plan || !plan.ativo) throw new Error(`Plan '${params.planSlug}' is not available.`);
 
@@ -461,7 +487,7 @@ export class BillingEngine {
 
     const nextDueDate = new Date();
     nextDueDate.setDate(nextDueDate.getDate() + 3);
-    const cycle = plan.intervalo === "anual" ? "YEARLY" : "MONTHLY";
+    const cycle = plan.intervalo === "trimestral" ? "QUARTERLY" : plan.intervalo === "vitalicio" ? "YEARLY" : "MONTHLY";
 
     const gatewayResult = await this.gateway.createSubscription({
       gatewayCustomerId,
@@ -469,8 +495,10 @@ export class BillingEngine {
       cycle,
       billingType: params.billingType,
       nextDueDate,
-      description: `Assinatura Plano ${plan.nome} - Vance Library`,
+      description: `Assinatura ${plan.nome} - Vance Library`,
     });
+
+    const durationDays = plan.intervalo === "vitalicio" ? 3650 : plan.intervalo === "trimestral" ? 90 : 30;
 
     const dbSubscription = await prisma.subscription.create({
       data: {
@@ -480,9 +508,7 @@ export class BillingEngine {
         gateway_subscription_id: gatewayResult.gatewaySubscriptionId,
         status: "pendente",
         inicio: new Date(),
-        fim: plan.intervalo === "anual" 
-          ? new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        fim: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000),
         renovacao: nextDueDate,
       },
     });
@@ -842,14 +868,16 @@ const PORT = process.env.PORT || 3001;
 
 async function seedPlans() {
   try {
-    const count = await prisma.plan.count();
-    if (count === 0) {
-      await prisma.plan.createMany({
-        data: [
-          { nome: "Plano Básico", slug: "basic", preco: 0.00, intervalo: "mensal", descricao: "Acesso básico às visualizações de componentes" },
-          { nome: "Plano Padrão", slug: "standard", preco: 49.90, intervalo: "mensal", descricao: "Cópia de prompts ilimitada e suporte prioritário" },
-          { nome: "Plano Pro", slug: "pro", preco: 99.90, intervalo: "mensal", descricao: "Acesso total aos componentes 3D e WebGL premium" },
-        ]
+    const plansToSync = [
+      { nome: "Plano Grátis", slug: "basic", preco: 0.00, intervalo: "mensal", descricao: "Acesso básico às visualizações de componentes" },
+      { nome: "Acesso 3 Meses", slug: "trimestral", preco: 397.00, intervalo: "trimestral", descricao: "Acesso completo por 3 meses a todos os prompts e componentes" },
+      { nome: "Acesso Vitalício", slug: "vitalicio", preco: 897.00, intervalo: "vitalicio", descricao: "Acesso vitalício sem mensalidades a toda a biblioteca" },
+    ];
+    for (const p of plansToSync) {
+      await prisma.plan.upsert({
+        where: { slug: p.slug },
+        update: { preco: p.preco, nome: p.nome, intervalo: p.intervalo, descricao: p.descricao, ativo: true },
+        create: p,
       });
     }
   } catch (err) {}
