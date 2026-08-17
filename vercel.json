@@ -2,7 +2,7 @@
   "version": 2,
   "framework": "vite",
   "functions": {
-    "api/index.ts": {
+    "api/**": {
       "includeFiles": "node_modules/.prisma/client/**"
     }
   },
