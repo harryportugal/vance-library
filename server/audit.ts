@@ -1,7 +1,9 @@
 import fs from "fs";
 import path from "path";
 
-const logDir = path.join(process.cwd(), "logs");
+const logDir = process.env.VERCEL 
+  ? path.join("/tmp", "logs") 
+  : path.join(process.cwd(), "logs");
 
 // Ensure logs directory exists safely
 try {
@@ -9,7 +11,7 @@ try {
     fs.mkdirSync(logDir, { recursive: true });
   }
 } catch (err) {
-  console.error("Failed to create log directory:", err);
+  // Silent fallback in serverless environments
 }
 
 const auditLogPath = path.join(logDir, "audit.log");
