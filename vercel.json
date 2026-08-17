@@ -1,6 +1,11 @@
 {
   "version": 2,
   "framework": "vite",
+  "functions": {
+    "api/index.ts": {
+      "includeFiles": "node_modules/.prisma/client/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
