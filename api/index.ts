@@ -1,9 +1,10 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import fs from "fs";
 import path from "path";
-import { Pool } from "pg";
+import pg from "pg";
+const { Pool } = pg;
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import { betterAuth } from "better-auth";
