@@ -112,11 +112,39 @@ app.get("/api/health", (req: Request, res: Response) => {
   });
 });
 
-// Mount Better Auth Handler (Express 5 compatible wildcard & subpath routing)
-app.all("/api/auth/*splat", toNodeHandler(auth));
-app.all("/api/auth", toNodeHandler(auth));
-app.all("/auth/*splat", toNodeHandler(auth));
-app.all("/auth", toNodeHandler(auth));
+app.get("/api/db-test", async (req: Request, res: Response) => {
+  try {
+    const count = await prisma.user.count();
+    res.json({ success: true, userCount: count });
+  } catch (err: any) {
+    res.status(500).json({ error: "DB connection failed", message: err?.message || String(err) });
+  }
+});
+
+// Mount Better Auth Handler with safe error handling
+const authNodeHandler = toNodeHandler(auth);
+
+app.all("/api/auth/*splat", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await authNodeHandler(req, res);
+  } catch (err: any) {
+    console.error("[BetterAuth Error]", err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Better Auth Error", message: err?.message || String(err) });
+    }
+  }
+});
+
+app.all("/api/auth", async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await authNodeHandler(req, res);
+  } catch (err: any) {
+    console.error("[BetterAuth Error]", err);
+    if (!res.headersSent) {
+      res.status(500).json({ error: "Better Auth Error", message: err?.message || String(err) });
+    }
+  }
+});
 
 // Express body parsers
 app.use(express.json());
