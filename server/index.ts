@@ -96,6 +96,25 @@ const adminLimiter = rateLimiterFactory(1 * 60 * 1000, 15, "ADMIN_LIMITER");   /
 const profileLimiter = rateLimiterFactory(1 * 60 * 1000, 10, "PROFILE_LIMITER"); // 10 requests per minute
 const generalApiLimiter = rateLimiterFactory(1 * 60 * 1000, 100, "GENERAL_API"); // 100 requests per minute
 
+// Diagnostics & Health check endpoint
+app.get("/api/health", (req: Request, res: Response) => {
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+    environment: {
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
+      hasBetterAuthSecret: !!process.env.BETTER_AUTH_SECRET,
+      hasBetterAuthUrl: !!process.env.BETTER_AUTH_URL,
+      hasGoogleClientId: !!process.env.GOOGLE_CLIENT_ID,
+      hasGoogleClientSecret: !!process.env.GOOGLE_CLIENT_SECRET,
+      hasGithubClientId: !!process.env.GITHUB_CLIENT_ID,
+      hasGithubClientSecret: !!process.env.GITHUB_CLIENT_SECRET,
+      nodeEnv: process.env.NODE_ENV,
+      isVercel: !!process.env.VERCEL,
+    },
+  });
+});
+
 // Mount Better Auth Handler (Express 5 compatible wildcard & subpath routing)
 app.all("/api/auth/*splat", toNodeHandler(auth));
 app.all("/api/auth", toNodeHandler(auth));
