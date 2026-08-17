@@ -331,7 +331,8 @@ export default function App() {
           return;
         }
         
-        const isUserPremium = sessionData?.user?.role === 'admin' || sessionData?.user?.plan === 'premium';
+        const userObj = sessionData?.user as any;
+        const isUserPremium = userObj?.role === 'admin' || userObj?.plan === 'premium';
         if (!isUserPremium) {
           setPricingModalOpen(true);
           alert(lang === 'pt' ? 'Este recurso é exclusivo para assinantes Premium. Escolha um plano para liberar o acesso!' : 'This is a Premium-exclusive resource. Upgrade your plan to unlock access!');
@@ -2412,18 +2413,18 @@ function ProfileModal({
           {/* Badges */}
           <div className="flex items-center gap-2">
             <span className="px-2 py-0.5 text-[9px] font-bold bg-zinc-900 text-zinc-400 rounded-md uppercase">
-              {user.role || 'User'}
+              {(user as any).role || 'User'}
             </span>
             <span className={`px-2 py-0.5 text-[9px] font-bold bg-zinc-900 rounded-md uppercase ${
-              user.plan === 'premium' ? 'text-emerald-400' : 'text-zinc-500'
+              (user as any).plan === 'premium' ? 'text-emerald-400' : 'text-zinc-500'
             }`}>
-              {user.plan === 'premium' ? 'Premium' : 'Free'}
+              {(user as any).plan === 'premium' ? 'Premium' : 'Free'}
             </span>
           </div>
         </div>
 
         <div className="mt-6 border-t border-zinc-900/40 pt-4 space-y-2">
-          {user.plan !== 'premium' ? (
+          {(user as any).plan !== 'premium' ? (
             <button
               onClick={() => {
                 handleClose();

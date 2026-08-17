@@ -1,4 +1,33 @@
-import { PaymentGateway } from "./gateway.interface";
+export interface PaymentGateway {
+  name: string;
+  createCustomer(user: {
+    id: string;
+    name: string;
+    email: string;
+    cpfCnpj?: string;
+    mobilePhone?: string;
+  }): Promise<string>;
+  createSubscription(params: {
+    gatewayCustomerId: string;
+    value: number;
+    cycle: "WEEKLY" | "MONTHLY" | "YEARLY";
+    billingType: "BOLETO" | "PIX" | "CREDIT_CARD";
+    nextDueDate: Date;
+    description: string;
+  }): Promise<{
+    gatewaySubscriptionId: string;
+    invoiceUrl?: string;
+    checkoutUrl?: string;
+    invoiceId?: string;
+  }>;
+  cancelSubscription(gatewaySubscriptionId: string): Promise<void>;
+  updateSubscription(
+    gatewaySubscriptionId: string,
+    params: {
+      value: number;
+    }
+  ): Promise<void>;
+}
 
 export class AsaasGateway implements PaymentGateway {
   public readonly name = "Asaas";

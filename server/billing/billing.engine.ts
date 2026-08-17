@@ -1,10 +1,39 @@
 import { prisma } from "../prisma";
-import { PaymentGateway } from "./gateway.interface";
 import { AsaasGateway } from "./asaas.gateway";
 import { logAuditEvent } from "../audit";
 
+export interface PaymentGateway {
+  name: string;
+  createCustomer(user: {
+    id: string;
+    name: string;
+    email: string;
+    cpfCnpj?: string;
+    mobilePhone?: string;
+  }): Promise<string>;
+  createSubscription(params: {
+    gatewayCustomerId: string;
+    value: number;
+    cycle: "WEEKLY" | "MONTHLY" | "YEARLY";
+    billingType: "BOLETO" | "PIX" | "CREDIT_CARD";
+    nextDueDate: Date;
+    description: string;
+  }): Promise<{
+    gatewaySubscriptionId: string;
+    invoiceUrl?: string;
+    checkoutUrl?: string;
+    invoiceId?: string;
+  }>;
+  cancelSubscription(gatewaySubscriptionId: string): Promise<void>;
+  updateSubscription(
+    gatewaySubscriptionId: string,
+    params: {
+      value: number;
+    }
+  ): Promise<void>;
+}
+
 export class BillingEngine {
-  private readonly prisma = prisma;
   private readonly gateway: PaymentGateway;
   private readonly webhookToken: string;
 
@@ -23,7 +52,7 @@ export class BillingEngine {
    */
   private async logBilling(message: string, level: "info" | "warn" | "error", details?: string) {
     try {
-      await this.prisma.billingLog.create({
+      await prisma.billingLog.create({
         data: { message, level, details },
       });
       console.log(`[BILLING ${level.toUpperCase()}] ${message} ${details ? `| Details: ${details}` : ""}`);
@@ -47,7 +76,7 @@ export class BillingEngine {
   }> {
     try {
       // 1. Fetch user and check active subscriptions
-      const user = await this.prisma.user.findUnique({
+      const user = await prisma.user.findUnique({
         where: { id: params.userId },
         include: { subscriptions: true },
       });
@@ -63,7 +92,7 @@ export class BillingEngine {
       }
 
       // 2. Fetch plan details
-      const plan = await this.prisma.plan.findUnique({
+      const plan = await prisma.plan.findUnique({
         where: { slug: params.planSlug },
       });
 
@@ -99,7 +128,7 @@ export class BillingEngine {
       });
 
       // 5. Save subscription to database
-      const dbSubscription = await this.prisma.subscription.create({
+      const dbSubscription = await prisma.subscription.create({
         data: {
           user_id: user.id,
           plano_id: plan.id,
@@ -114,7 +143,7 @@ export class BillingEngine {
         },
       });
 
-      await this.prisma.transaction.create({
+      await prisma.transaction.create({
         data: {
           subscription_id: dbSubscription.id,
           user_id: user.id,
@@ -151,7 +180,7 @@ export class BillingEngine {
    */
   async cancelSubscription(userId: string): Promise<void> {
     try {
-      const activeSub = await this.prisma.subscription.findFirst({
+      const activeSub = await prisma.subscription.findFirst({
         where: { user_id: userId, status: "ativa" },
         include: { user: true },
       });
@@ -168,7 +197,7 @@ export class BillingEngine {
       await this.gateway.cancelSubscription(activeSub.gateway_subscription_id);
 
       // Update database locally
-      await this.prisma.subscription.update({
+      await prisma.subscription.update({
         where: { id: activeSub.id },
         data: {
           status: "cancelada",
@@ -177,7 +206,7 @@ export class BillingEngine {
       });
 
       // Revoke premium access in user table
-      await this.prisma.user.update({
+      await prisma.user.update({
         where: { id: userId },
         data: { plan: "free" },
       });
@@ -200,7 +229,7 @@ export class BillingEngine {
    */
   async changePlan(userId: string, newPlanSlug: string): Promise<void> {
     try {
-      const activeSub = await this.prisma.subscription.findFirst({
+      const activeSub = await prisma.subscription.findFirst({
         where: { user_id: userId, status: "ativa" },
         include: { user: true },
       });
@@ -209,7 +238,7 @@ export class BillingEngine {
         throw new Error("No active subscription found to modify.");
       }
 
-      const newPlan = await this.prisma.plan.findUnique({
+      const newPlan = await prisma.plan.findUnique({
         where: { slug: newPlanSlug },
       });
 
@@ -223,7 +252,7 @@ export class BillingEngine {
       });
 
       // Update DB record
-      await this.prisma.subscription.update({
+      await prisma.subscription.update({
         where: { id: activeSub.id },
         data: {
           plano_id: newPlan.id,
@@ -255,7 +284,7 @@ export class BillingEngine {
     }
 
     // 2. Idempotency Check: prevent double processing (replay/duplicity protection)
-    const existingEvent = await this.prisma.billingEvent.findUnique({
+    const existingEvent = await prisma.billingEvent.findUnique({
       where: { gateway_event_id: eventId },
     });
 
@@ -265,7 +294,7 @@ export class BillingEngine {
     }
 
     // Save event payload immediately for tamper-evident record keeping
-    await this.prisma.billingEvent.create({
+    await prisma.billingEvent.create({
       data: {
         gateway_event_id: eventId,
         event_type: eventType,
@@ -292,7 +321,7 @@ export class BillingEngine {
           }
 
           // Find the active/pending subscription locally
-          const sub = await this.prisma.subscription.findFirst({
+          const sub = await prisma.subscription.findFirst({
             where: { gateway_subscription_id: subscriptionId },
             include: { user: true, plano: true },
           });
@@ -307,7 +336,7 @@ export class BillingEngine {
             ? new Date(payload.payment.dueDate) 
             : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
-          await this.prisma.subscription.update({
+          await prisma.subscription.update({
             where: { id: sub.id },
             data: {
               status: "ativa",
@@ -316,13 +345,13 @@ export class BillingEngine {
           });
 
           // Set user plan property to premium
-          await this.prisma.user.update({
+          await prisma.user.update({
             where: { id: sub.user_id },
             data: { plan: "premium" },
           });
 
           // Record payment transaction
-          await this.prisma.transaction.create({
+          await prisma.transaction.create({
             data: {
               subscription_id: sub.id,
               user_id: sub.user_id,
@@ -350,23 +379,23 @@ export class BillingEngine {
           const subscriptionId = payload.payment.subscription;
           if (!subscriptionId) break;
 
-          const sub = await this.prisma.subscription.findFirst({
+          const sub = await prisma.subscription.findFirst({
             where: { gateway_subscription_id: subscriptionId },
             include: { user: true },
           });
 
           if (sub) {
-            await this.prisma.subscription.update({
+            await prisma.subscription.update({
               where: { id: sub.id },
               data: { status: "vencida" },
             });
 
-            await this.prisma.user.update({
+            await prisma.user.update({
               where: { id: sub.user_id },
               data: { plan: "free" },
             });
 
-            await this.prisma.transaction.create({
+            await prisma.transaction.create({
               data: {
                 subscription_id: sub.id,
                 user_id: sub.user_id,
@@ -386,18 +415,18 @@ export class BillingEngine {
           const subscriptionId = payload.subscription.id;
           if (!subscriptionId) break;
 
-          const sub = await this.prisma.subscription.findFirst({
+          const sub = await prisma.subscription.findFirst({
             where: { gateway_subscription_id: subscriptionId },
             include: { user: true },
           });
 
           if (sub) {
-            await this.prisma.subscription.update({
+            await prisma.subscription.update({
               where: { id: sub.id },
               data: { status: "cancelada", cancelada_em: new Date() },
             });
 
-            await this.prisma.user.update({
+            await prisma.user.update({
               where: { id: sub.user_id },
               data: { plan: "free" },
             });
@@ -413,7 +442,7 @@ export class BillingEngine {
       }
 
       // Mark event as successfully processed
-      await this.prisma.billingEvent.update({
+      await prisma.billingEvent.update({
         where: { gateway_event_id: eventId },
         data: { processed: true },
       });
