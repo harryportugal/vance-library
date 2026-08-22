@@ -18,7 +18,9 @@ import {
   AlertCircle,
   QrCode,
   CreditCard,
-  FileText
+  FileText,
+  ShieldCheck,
+  Sparkles
 } from 'lucide-react';
 import Login from './components/Login';
 import { PageTransition, type PageTransitionRef } from './components/PageTransition';
@@ -2108,7 +2110,6 @@ function PricingModal({
   const [isExiting, setIsExiting] = useState(false);
   const { data: sessionData } = authClient.useSession();
   const [subscribingPlan, setSubscribingPlan] = useState<string | null>(null);
-  const [billingType, setBillingType] = useState<'PIX' | 'CREDIT_CARD' | 'BOLETO'>('PIX');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleClose = () => {
@@ -2150,13 +2151,12 @@ function PricingModal({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           planSlug: planId,
-          billingType,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || (isPt ? 'Erro ao iniciar assinatura' : 'Failed to start subscription'));
+        throw new Error(data.error || (isPt ? 'Erro ao iniciar checkout' : 'Failed to start checkout'));
       }
 
       const redirectUrl = data.checkoutUrl || data.invoiceUrl;
@@ -2178,6 +2178,7 @@ function PricingModal({
       name: isPt ? 'Plano Grátis' : (isEs ? 'Plan Gratis' : 'Free Plan'),
       price: isPt ? 'Grátis' : (isEs ? 'Gratis' : 'Free'),
       period: isPt ? 'Acesso inicial' : (isEs ? 'Acceso inicial' : 'Free access'),
+      buttonText: isPt ? 'Plano Atual' : (isEs ? 'Plan Actual' : 'Current Plan'),
       features: [
         isPt ? 'Acesso a todos os componentes básicos' : (isEs ? 'Acceso a componentes básicos' : 'Access to basic components'),
         isPt ? 'Visualização interativa das animações' : (isEs ? 'Previsualización interactiva' : 'Interactive animation preview'),
@@ -2193,6 +2194,7 @@ function PricingModal({
       price: 'R$ 397',
       period: isPt ? 'Pagamento único / 3 meses' : (isEs ? 'Pago único / 3 meses' : 'Single payment / 3 months'),
       badge: isPt ? 'Trimestral' : (isEs ? 'Trimestral' : 'Quarterly'),
+      buttonText: isPt ? 'Garantir Acesso 3 Meses' : (isEs ? 'Acceder por 3 Meses' : 'Get 3 Months Access'),
       features: [
         isPt ? 'Acesso completo por 3 meses' : (isEs ? 'Acceso completo por 3 meses' : 'Full access for 3 months'),
         isPt ? 'Todo o conteúdo do plano Grátis' : (isEs ? 'Todo lo del plan Gratis' : 'Everything in Free plan'),
@@ -2210,6 +2212,7 @@ function PricingModal({
       price: 'R$ 897',
       period: isPt ? 'Pagamento único / Acesso Para Sempre' : (isEs ? 'Pago único / Acceso Para Siempre' : 'One-time payment / Forever Access'),
       badge: isPt ? 'Melhor Valor • Lifetime' : (isEs ? 'Mejor Valor • Lifetime' : 'Best Value • Lifetime'),
+      buttonText: isPt ? 'Garantir Acesso Vitalício' : (isEs ? 'Obtener Acceso Vitalicio' : 'Get Lifetime Access'),
       features: [
         isPt ? 'Acesso Vitalício sem mensalidades' : (isEs ? 'Acceso vitalicio sin mensualidades' : 'Lifetime access, no monthly fees'),
         isPt ? 'Todas as atualizações futuras inclusas' : (isEs ? 'Todas las actualizaciones futuras' : 'All future updates included'),
@@ -2251,7 +2254,7 @@ function PricingModal({
 
         {/* Error Banner */}
         {errorMsg && (
-          <div className="w-full max-w-md bg-red-500/15 text-red-400 px-4 py-3 rounded-2xl text-xs flex items-center gap-2.5 z-20 animate-scale-in shadow-lg">
+          <div className="w-full max-w-md bg-red-500/15 border border-red-500/30 text-red-400 px-4 py-3 rounded-2xl text-xs flex items-center gap-2.5 z-20 animate-scale-in shadow-lg">
             <AlertCircle className="w-4 h-4 shrink-0 text-red-400" />
             <span className="flex-1 font-medium">{errorMsg}</span>
             <button onClick={() => setErrorMsg(null)} className="text-red-400 hover:text-white cursor-pointer">
@@ -2260,53 +2263,20 @@ function PricingModal({
           </div>
         )}
 
-        {/* Payment Method Selector (Borderless) */}
-        <div className="z-10 flex flex-col sm:flex-row items-center gap-3 bg-[#131316] p-1.5 rounded-full shadow-lg">
-          <span className="text-[11px] font-bold text-zinc-400 px-3 uppercase tracking-wider">
-            {isPt ? 'Pagamento Asaas:' : 'Payment Method:'}
-          </span>
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => setBillingType('PIX')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                billingType === 'PIX'
-                  ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
-              }`}
-            >
-              <QrCode size={13} />
-              <span>PIX</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setBillingType('CREDIT_CARD')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                billingType === 'CREDIT_CARD'
-                  ? 'bg-white text-black shadow-md'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
-              }`}
-            >
-              <CreditCard size={13} />
-              <span>{isPt ? 'Cartão' : 'Card'}</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setBillingType('BOLETO')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                billingType === 'BOLETO'
-                  ? 'bg-zinc-700 text-white shadow-md'
-                  : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
-              }`}
-            >
-              <FileText size={13} />
-              <span>Boleto</span>
-            </button>
-          </div>
+        {/* Subtitle / Value Proposition */}
+        <div className="z-10 text-center space-y-2 max-w-xl animate-slide-up-fade">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            {isPt ? 'Escolha seu plano de acesso' : 'Choose your access plan'}
+          </h2>
+          <p className="text-xs sm:text-sm text-zinc-400">
+            {isPt 
+              ? 'Desbloqueie todos os códigos, prompts de IA e componentes interativos imediatamente.' 
+              : 'Unlock all code, AI prompts and interactive components immediately.'}
+          </p>
         </div>
 
-        {/* Pricing Cards Grid (Borderless) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full z-10 relative">
+        {/* Pricing Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full z-10 relative mt-2">
           {plans.map((plan, index) => {
             const cardDelay = index * 120 + 200;
             const isProcessingThis = subscribingPlan === plan.id;
@@ -2322,8 +2292,8 @@ function PricingModal({
                 }}
                 className={`rounded-[32px] p-8 flex flex-col justify-between min-h-[520px] transition-all relative animate-slide-up-fade ${
                   plan.recommended
-                    ? 'bg-[#18181c] shadow-[0_30px_70px_rgba(0,0,0,0.95)]'
-                    : 'bg-[#111114] shadow-[0_15px_40px_rgba(0,0,0,0.6)]'
+                    ? 'bg-[#18181c] border border-white/[0.08] shadow-[0_30px_70px_rgba(0,0,0,0.95)]'
+                    : 'bg-[#111114] border border-white/[0.04] shadow-[0_15px_40px_rgba(0,0,0,0.6)]'
                 }`}
               >
                 <div>
@@ -2383,31 +2353,32 @@ function PricingModal({
                   </ul>
                 </div>
 
-                {/* Action Button (Borderless) */}
+                {/* Action Button */}
                 <div 
                   style={{ animationDelay: `${cardDelay + 150 + plan.features.length * 45}ms` }}
                   className="mt-8 animate-slide-up-fade"
                 >
                   <button 
                     onClick={() => handleSubscribe(plan.id)}
-                    disabled={subscribingPlan !== null}
-                    className={`w-full py-3.5 text-xs font-bold rounded-full transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 ${
+                    disabled={subscribingPlan !== null || plan.id === 'free'}
+                    className={`w-full py-4 text-xs font-bold rounded-full transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 ${
                       plan.recommended
-                        ? 'bg-white hover:bg-zinc-200 text-black shadow-white/10'
+                        ? 'bg-white hover:bg-zinc-200 text-black shadow-xl shadow-white/10 hover:scale-[1.02] active:scale-[0.98]'
                         : plan.id === 'free'
-                          ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300'
-                          : 'bg-zinc-800 hover:bg-zinc-700 text-white'
+                          ? 'bg-zinc-800/60 text-zinc-500 cursor-default'
+                          : 'bg-zinc-800 hover:bg-zinc-700 text-white hover:scale-[1.02] active:scale-[0.98]'
                     } ${subscribingPlan !== null && !isProcessingThis ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {isProcessingThis ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>{isPt ? 'Gerando Pagamento...' : 'Redirecting to Asaas...'}</span>
+                        <Loader2 className="w-4 h-4 animate-spin text-current" />
+                        <span>{isPt ? 'Abrindo Checkout...' : 'Opening Checkout...'}</span>
                       </>
-                    ) : plan.id === 'free' ? (
-                      <span>{isPt ? 'Plano Atual' : (isEs ? 'Plan Actual' : 'Current Plan')}</span>
                     ) : (
-                      <span>{isPt ? `Assinar com Asaas (${billingType})` : `Subscribe with Asaas (${billingType})`}</span>
+                      <>
+                        {plan.recommended && <Sparkles size={14} className="text-black" />}
+                        <span>{plan.buttonText}</span>
+                      </>
                     )}
                   </button>
                 </div>
@@ -2416,10 +2387,28 @@ function PricingModal({
           })}
         </div>
 
-        {/* Bottom Plans Badge */}
+        {/* Bottom Trust & Security Banner */}
         <div className="w-full flex flex-col items-center z-10 relative mt-4">
-          <div className="px-5 py-2 rounded-full bg-[#131316] text-zinc-400 text-[11px] uppercase font-bold tracking-widest shadow-md">
-            {isPt ? 'Garantia e Segurança Vance Library' : 'Vance Library Security Guarantee'}
+          <div className="px-6 py-3 rounded-full bg-[#131316] border border-white/[0.06] text-zinc-400 text-[11px] font-medium tracking-wide flex flex-wrap items-center justify-center gap-3 sm:gap-4 shadow-xl">
+            <span className="flex items-center gap-1.5 text-zinc-300">
+              <ShieldCheck size={14} className="text-emerald-400" />
+              {isPt ? 'Checkout Seguro Asaas' : 'Secure Checkout'}
+            </span>
+            <span className="text-zinc-700 hidden sm:inline">•</span>
+            <span className="flex items-center gap-1.5 text-zinc-300">
+              <QrCode size={13} className="text-emerald-400" />
+              {isPt ? 'PIX Instantâneo' : 'Instant PIX'}
+            </span>
+            <span className="text-zinc-700 hidden sm:inline">•</span>
+            <span className="flex items-center gap-1.5 text-zinc-300">
+              <CreditCard size={13} className="text-blue-400" />
+              {isPt ? 'Cartão em até 12x' : 'Card up to 12x'}
+            </span>
+            <span className="text-zinc-700 hidden sm:inline">•</span>
+            <span className="flex items-center gap-1.5 text-zinc-300">
+              <FileText size={13} className="text-zinc-400" />
+              Boleto
+            </span>
           </div>
         </div>
 

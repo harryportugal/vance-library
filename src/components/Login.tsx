@@ -318,7 +318,6 @@ export default function Login({ lang, onLogin, onClose, initialMode = 'signin' }
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           planSlug: selectedPlan,
-          billingType: 'PIX',
         }),
       });
 

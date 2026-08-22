@@ -286,6 +286,15 @@ export const auth = betterAuth({
 export interface PaymentGateway {
   name: string;
   createCustomer(user: { id: string; name: string; email: string; cpfCnpj?: string; mobilePhone?: string }): Promise<string>;
+  createPaymentLink(params: {
+    name: string;
+    description: string;
+    value: number;
+    chargeType: "DETACHED" | "RECURRENT" | "INSTALLMENT";
+    subscriptionCycle?: "MONTHLY" | "QUARTERLY" | "YEARLY" | null;
+    maxInstallmentCount?: number;
+    externalReference?: string;
+  }): Promise<{ id: string; url: string }>;
   createSubscription(params: {
     gatewayCustomerId: string;
     value: number;
@@ -304,8 +313,8 @@ export class AsaasGateway implements PaymentGateway {
   private readonly apiUrl: string;
 
   constructor() {
-    this.apiKey = process.env.ASAAS_API_KEY || "";
-    this.apiUrl = process.env.ASAAS_API_URL || "https://sandbox.asaas.com/api/v3";
+    this.apiKey = process.env.ASAAS_API_KEY ? process.env.ASAAS_API_KEY.trim() : "";
+    this.apiUrl = process.env.ASAAS_API_URL ? process.env.ASAAS_API_URL.trim() : "https://api.asaas.com/v3";
   }
 
   private getHeaders() {
@@ -337,6 +346,44 @@ export class AsaasGateway implements PaymentGateway {
     return data.id;
   }
 
+  async createPaymentLink(params: {
+    name: string;
+    description: string;
+    value: number;
+    chargeType: "DETACHED" | "RECURRENT" | "INSTALLMENT";
+    subscriptionCycle?: "MONTHLY" | "QUARTERLY" | "YEARLY" | null;
+    maxInstallmentCount?: number;
+    externalReference?: string;
+  }): Promise<{ id: string; url: string }> {
+    const response = await fetch(`${this.apiUrl}/paymentLinks`, {
+      method: "POST",
+      headers: this.getHeaders(),
+      body: JSON.stringify({
+        name: params.name,
+        description: params.description,
+        value: params.value,
+        billingType: "UNDEFINED",
+        chargeType: params.chargeType,
+        subscriptionCycle: params.subscriptionCycle || null,
+        dueDateLimitDays: 3,
+        maxInstallmentCount: params.maxInstallmentCount || 1,
+        notificationEnabled: true,
+        externalReference: params.externalReference || undefined,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Asaas API error (status ${response.status}): ${errorText}`);
+    }
+
+    const data = (await response.json()) as any;
+    return {
+      id: data.id,
+      url: data.url,
+    };
+  }
+
   async createSubscription(params: any): Promise<any> {
     const formattedDate = params.nextDueDate.toISOString().split("T")[0];
     const response = await fetch(`${this.apiUrl}/subscriptions`, {
@@ -361,7 +408,6 @@ export class AsaasGateway implements PaymentGateway {
     let invoiceUrl = data.invoiceUrl || data.paymentLink || undefined;
     let checkoutUrl = data.bankSlipUrl || data.checkoutUrl || undefined;
 
-    // Fetch first payment from subscription to get direct invoiceUrl / checkout link
     try {
       const paymentsRes = await fetch(`${this.apiUrl}/subscriptions/${data.id}/payments`, {
         method: "GET",
@@ -418,7 +464,7 @@ export class BillingEngine {
 
   constructor() {
     this.gateway = new AsaasGateway();
-    this.webhookToken = process.env.ASAAS_WEBHOOK_TOKEN || "vance-library-webhook-secret-dev-fallback";
+    this.webhookToken = (process.env.ASAAS_WEBHOOK_TOKEN || "vance-library-webhook-secret-dev-fallback").trim();
   }
 
   private async logBilling(message: string, level: "info" | "warn" | "error", details?: string) {
@@ -432,7 +478,7 @@ export class BillingEngine {
     }
   }
 
-  async createSubscription(params: { userId: string; planSlug: string; billingType: "BOLETO" | "PIX" | "CREDIT_CARD" }) {
+  async createSubscription(params: { userId: string; planSlug: string }) {
     const user = await prisma.user.findUnique({
       where: { id: params.userId },
       include: { subscriptions: true },
@@ -441,7 +487,7 @@ export class BillingEngine {
     if (!user) throw new Error("User not found.");
 
     const existingActive = user.subscriptions.find((s: any) => s.status === "ativa");
-    if (existingActive) throw new Error("User already has an active subscription.");
+    if (existingActive) throw new Error("Você já possui uma assinatura ativa.");
 
     let searchSlug = params.planSlug;
     if (searchSlug === "free") searchSlug = "basic";
@@ -476,40 +522,31 @@ export class BillingEngine {
 
     if (!plan || !plan.ativo) throw new Error(`Plan '${params.planSlug}' is not available.`);
 
-    let gatewayCustomerId = user.subscriptions.find((s: any) => s.gateway_customer_id)?.gateway_customer_id;
-    if (!gatewayCustomerId) {
-      gatewayCustomerId = await this.gateway.createCustomer({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      });
-    }
+    const isVitalicio = plan.intervalo === "vitalicio" || plan.slug === "vitalicio";
+    const chargeType = isVitalicio ? "DETACHED" : "RECURRENT";
+    const subscriptionCycle = isVitalicio ? null : "QUARTERLY";
+    const maxInstallmentCount = isVitalicio ? 12 : 1;
 
-    const nextDueDate = new Date();
-    nextDueDate.setDate(nextDueDate.getDate() + 3);
-    const cycle = plan.intervalo === "trimestral" ? "QUARTERLY" : plan.intervalo === "vitalicio" ? "YEARLY" : "MONTHLY";
-
-    const gatewayResult = await this.gateway.createSubscription({
-      gatewayCustomerId,
+    const paymentLinkResult = await this.gateway.createPaymentLink({
+      name: `Vance Library - ${plan.nome}`,
+      description: plan.descricao || `Acesso ao plano ${plan.nome}`,
       value: plan.preco,
-      cycle,
-      billingType: params.billingType,
-      nextDueDate,
-      description: `Assinatura ${plan.nome} - Vance Library`,
+      chargeType,
+      subscriptionCycle,
+      maxInstallmentCount,
+      externalReference: user.id,
     });
 
-    const durationDays = plan.intervalo === "vitalicio" ? 3650 : plan.intervalo === "trimestral" ? 90 : 30;
+    const durationDays = isVitalicio ? 3650 : plan.intervalo === "trimestral" ? 90 : 30;
 
     const dbSubscription = await prisma.subscription.create({
       data: {
         user_id: user.id,
         plano_id: plan.id,
-        gateway_customer_id: gatewayCustomerId,
-        gateway_subscription_id: gatewayResult.gatewaySubscriptionId,
+        gateway_subscription_id: paymentLinkResult.id,
         status: "pendente",
         inicio: new Date(),
         fim: new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000),
-        renovacao: nextDueDate,
       },
     });
 
@@ -519,17 +556,17 @@ export class BillingEngine {
         user_id: user.id,
         amount: plan.preco,
         status: "pendente",
-        payment_method: params.billingType,
-        gateway_payment_id: gatewayResult.invoiceId || null,
-        invoice_url: gatewayResult.invoiceUrl || null,
+        payment_method: "UNDEFINED",
+        gateway_payment_id: paymentLinkResult.id,
+        invoice_url: paymentLinkResult.url,
       },
     });
 
     return {
       subscriptionId: dbSubscription.id,
-      gatewaySubscriptionId: gatewayResult.gatewaySubscriptionId,
-      invoiceUrl: gatewayResult.invoiceUrl,
-      checkoutUrl: gatewayResult.checkoutUrl,
+      gatewaySubscriptionId: paymentLinkResult.id,
+      invoiceUrl: paymentLinkResult.url,
+      checkoutUrl: paymentLinkResult.url,
     };
   }
 
@@ -543,7 +580,11 @@ export class BillingEngine {
       throw new Error("No active subscription found.");
     }
 
-    await this.gateway.cancelSubscription(activeSub.gateway_subscription_id);
+    try {
+      await this.gateway.cancelSubscription(activeSub.gateway_subscription_id);
+    } catch (e) {
+      console.warn("Could not cancel on Asaas (might be a detached payment link):", e);
+    }
 
     await prisma.subscription.update({
       where: { id: activeSub.id },
@@ -567,7 +608,9 @@ export class BillingEngine {
     const newPlan = await prisma.plan.findUnique({ where: { slug: newPlanSlug } });
     if (!newPlan || !newPlan.ativo) throw new Error(`Plan '${newPlanSlug}' is unavailable.`);
 
-    await this.gateway.updateSubscription(activeSub.gateway_subscription_id!, { value: newPlan.preco });
+    try {
+      await this.gateway.updateSubscription(activeSub.gateway_subscription_id!, { value: newPlan.preco });
+    } catch (e) {}
 
     await prisma.subscription.update({
       where: { id: activeSub.id },
@@ -597,13 +640,39 @@ export class BillingEngine {
     });
 
     if (eventType === "PAYMENT_RECEIVED" || eventType === "PAYMENT_CONFIRMED") {
+      const paymentLink = payload.payment?.paymentLink;
       const subscriptionId = payload.payment?.subscription;
-      if (subscriptionId) {
-        const sub = await prisma.subscription.findFirst({ where: { gateway_subscription_id: subscriptionId } });
-        if (sub) {
-          await prisma.subscription.update({ where: { id: sub.id }, data: { status: "ativa" } });
-          await prisma.user.update({ where: { id: sub.user_id }, data: { plan: "premium" } });
-        }
+      const externalRef = payload.payment?.externalReference;
+      const billingType = payload.payment?.billingType || "PIX";
+
+      let sub = null;
+      if (paymentLink) {
+        sub = await prisma.subscription.findFirst({ where: { gateway_subscription_id: paymentLink } });
+      }
+      if (!sub && subscriptionId) {
+        sub = await prisma.subscription.findFirst({ where: { gateway_subscription_id: subscriptionId } });
+      }
+      if (!sub && externalRef) {
+        sub = await prisma.subscription.findFirst({
+          where: { user_id: externalRef },
+          orderBy: { created_at: "desc" },
+        });
+      }
+
+      if (sub) {
+        await prisma.subscription.update({ where: { id: sub.id }, data: { status: "ativa" } });
+        await prisma.user.update({ where: { id: sub.user_id }, data: { plan: "premium" } });
+        await prisma.transaction.updateMany({
+          where: { subscription_id: sub.id, status: "pendente" },
+          data: { status: "pago", payment_method: billingType }
+        });
+      } else if (externalRef) {
+        await prisma.user.update({ where: { id: externalRef }, data: { plan: "premium" } });
+      }
+    } else if (eventType === "PAYMENT_REFUNDED" || eventType === "PAYMENT_DELETED") {
+      const externalRef = payload.payment?.externalReference;
+      if (externalRef) {
+        await prisma.user.update({ where: { id: externalRef }, data: { plan: "free" } });
       }
     }
 
@@ -807,11 +876,10 @@ app.post("/api/user/delete-account", requireSession, async (req: AuthenticatedRe
 
 app.post("/api/billing/subscribe", requireSession, async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
-    const { planSlug, billingType } = req.body;
+    const { planSlug } = req.body;
     const result = await billing.createSubscription({
       userId: req.session!.user.id,
       planSlug,
-      billingType,
     });
     res.json(result);
   } catch (err: any) {
