@@ -3,10 +3,7 @@
   "framework": "vite",
   "functions": {
     "api/index.js": {
-      "includeFiles": "node_modules/.prisma/client/**,prisma/schema.prisma"
-    },
-    "api/*.js": {
-      "includeFiles": "node_modules/.prisma/client/**,prisma/schema.prisma"
+      "includeFiles": "node_modules/.prisma/client/**"
     }
   },
   "rewrites": [
