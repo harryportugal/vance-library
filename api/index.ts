@@ -19,7 +19,7 @@ declare global {
 }
 
 function createPrismaClient(): PrismaClient {
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString = process.env.DATABASE_URL ? process.env.DATABASE_URL.trim() : undefined;
   if (!connectionString) {
     return new PrismaClient();
   }
@@ -120,7 +120,7 @@ export function logAuditEvent(event: AuditEvent): void {
 const FALLBACK_SECRET = "vance-library-super-secret-key-32-chars-minimum-dev-fallback";
 
 const getBaseUrl = () => {
-  if (process.env.BETTER_AUTH_URL) return process.env.BETTER_AUTH_URL;
+  if (process.env.BETTER_AUTH_URL) return process.env.BETTER_AUTH_URL.trim();
   if (process.env.NODE_ENV === "production" || process.env.VERCEL) return "https://vancelib.vercel.app";
   return "http://localhost:5173";
 };
@@ -130,25 +130,25 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   
-  secret: process.env.BETTER_AUTH_SECRET || FALLBACK_SECRET,
+  secret: (process.env.BETTER_AUTH_SECRET || FALLBACK_SECRET).trim(),
   baseURL: getBaseUrl(),
 
   trustedOrigins: [
     "https://vancelib.vercel.app",
     "http://localhost:5173",
     "http://localhost:3000",
-    ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL}`] : []),
-    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL] : []),
+    ...(process.env.VERCEL_URL ? [`https://${process.env.VERCEL_URL.trim()}`] : []),
+    ...(process.env.BETTER_AUTH_URL ? [process.env.BETTER_AUTH_URL.trim()] : []),
   ],
 
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: (process.env.GOOGLE_CLIENT_ID || "").trim(),
+      clientSecret: (process.env.GOOGLE_CLIENT_SECRET || "").trim(),
     },
     github: {
-      clientId: process.env.GITHUB_CLIENT_ID || "",
-      clientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+      clientId: (process.env.GITHUB_CLIENT_ID || "").trim(),
+      clientSecret: (process.env.GITHUB_CLIENT_SECRET || "").trim(),
     },
   },
 
