@@ -47697,7 +47697,7 @@ import fs2 from "fs";
 import path2 from "path";
 import pg3 from "pg";
 
-// node_modules/@prisma/driver-adapter-utils/node_modules/@prisma/debug/dist/index.mjs
+// node_modules/@prisma/debug/dist/index.mjs
 var __defProp2 = Object.defineProperty;
 var __export2 = (target, all) => {
   for (var name2 in all)
@@ -47946,9 +47946,6 @@ var name = "@prisma/adapter-pg";
 var FIRST_NORMAL_OBJECT_ID = 16384;
 var { types } = pg;
 var { builtins: ScalarColumnType, getTypeParser } = types;
-var AdditionalScalarColumnType = {
-  NAME: 19
-};
 var ArrayColumnType = {
   BIT_ARRAY: 1561,
   BOOL_ARRAY: 1e3,
@@ -48139,7 +48136,6 @@ function fieldToColumnType(fieldTypeId) {
     case ScalarColumnType.INET:
     case ScalarColumnType.CIDR:
     case ScalarColumnType.XML:
-    case AdditionalScalarColumnType.NAME:
       return ColumnTypeEnum.Text;
     case ScalarColumnType.BYTEA:
       return ColumnTypeEnum.Bytes;
@@ -48221,10 +48217,18 @@ function normalize_xml(xml) {
 function toJson(json) {
   return json;
 }
+function encodeBuffer(buffer) {
+  return Array.from(new Uint8Array(buffer));
+}
 var parsePgBytes = getTypeParser(ScalarColumnType.BYTEA);
-var normalizeByteaArray = getTypeParser(ArrayColumnType.BYTEA_ARRAY);
+var parseBytesArray = getTypeParser(ArrayColumnType.BYTEA_ARRAY);
+function normalizeByteaArray(serializedBytesArray) {
+  const buffers = parseBytesArray(serializedBytesArray);
+  return buffers.map((buf) => buf ? encodeBuffer(buf) : null);
+}
 function convertBytes(serializedBytes) {
-  return parsePgBytes(serializedBytes);
+  const buffer = parsePgBytes(serializedBytes);
+  return encodeBuffer(buffer);
 }
 function normalizeBit(bit) {
   return bit;
@@ -48277,8 +48281,11 @@ function mapArg(arg, argType) {
   if (typeof arg === "string" && argType.scalarType === "bytes") {
     return Buffer.from(arg, "base64");
   }
+  if (Array.isArray(arg) && argType.scalarType === "bytes") {
+    return Buffer.from(arg);
+  }
   if (ArrayBuffer.isView(arg)) {
-    return new Uint8Array(arg.buffer, arg.byteOffset, arg.byteLength);
+    return Buffer.from(arg.buffer, arg.byteOffset, arg.byteLength);
   }
   return arg;
 }
@@ -48358,11 +48365,6 @@ function mapDriverError(error3) {
         kind: "ValueOutOfRange",
         cause: error3.message
       };
-    case "22P02":
-      return {
-        kind: "InvalidInputValue",
-        message: error3.message
-      };
     case "23505": {
       const fields = error3.detail?.match(/Key \(([^)]+)\)/)?.at(1)?.split(", ");
       return {
@@ -48413,13 +48415,11 @@ function mapDriverError(error3) {
         kind: "TableDoesNotExist",
         table: error3.message.split(" ").at(1)?.split('"').at(1)
       };
-    case "42703": {
-      const rawColumn = error3.message.match(/^column (.+) does not exist$/)?.at(1);
+    case "42703":
       return {
         kind: "ColumnNotFound",
-        column: rawColumn?.replace(/"((?:""|[^"])*)"/g, (_, id) => id.replaceAll('""', '"'))
+        column: error3.message.split(" ").at(1)?.split('"').at(1)
       };
-    }
     case "42P04":
       return {
         kind: "DatabaseAlreadyExists",
@@ -48543,20 +48543,34 @@ var PgQueryable = class {
     const { sql: sql2, args } = query;
     const values = args.map((arg, i) => mapArg(arg, query.argTypes[i]));
     try {
-      const result = await this.client.query({
-        name: this.pgOptions?.statementNameGenerator?.(query),
-        text: sql2,
-        values,
-        rowMode: "array",
-        types: {
-          getTypeParser: (oid, format) => {
-            if (format === "text" && customParsers[oid]) {
-              return customParsers[oid];
+      const result = await this.client.query(
+        {
+          text: sql2,
+          values,
+          rowMode: "array",
+          types: {
+            // This is the error expected:
+            // No overload matches this call.
+            // The last overload gave the following error.
+            // Type '(oid: number, format?: any) => (json: string) => unknown' is not assignable to type '{ <T>(oid: number): TypeParser<string, string | T>; <T>(oid: number, format: "text"): TypeParser<string, string | T>; <T>(oid: number, format: "binary"): TypeParser<...>; }'.
+            //   Type '(json: string) => unknown' is not assignable to type 'TypeParser<Buffer, any>'.
+            //     Types of parameters 'json' and 'value' are incompatible.
+            //       Type 'Buffer' is not assignable to type 'string'.ts(2769)
+            //
+            // Because pg-types types expect us to handle both binary and text protocol versions,
+            // where as far we can see, pg will ever pass only text version.
+            //
+            // @ts-expect-error
+            getTypeParser: (oid, format) => {
+              if (format === "text" && customParsers[oid]) {
+                return customParsers[oid];
+              }
+              return types2.getTypeParser(oid, format);
             }
-            return types2.getTypeParser(oid, format);
           }
-        }
-      });
+        },
+        values
+      );
       return result;
     } catch (e) {
       this.onError(e);
@@ -48583,15 +48597,6 @@ var PgTransaction = class extends PgQueryable {
     debug2(`[js::rollback]`);
     this.cleanup?.();
     this.client.release();
-  }
-  async createSavepoint(name2) {
-    await this.executeRaw({ sql: `SAVEPOINT ${name2}`, args: [], argTypes: [] });
-  }
-  async rollbackToSavepoint(name2) {
-    await this.executeRaw({ sql: `ROLLBACK TO SAVEPOINT ${name2}`, args: [], argTypes: [] });
-  }
-  async releaseSavepoint(name2) {
-    await this.executeRaw({ sql: `RELEASE SAVEPOINT ${name2}`, args: [], argTypes: [] });
   }
 };
 var PrismaPgAdapter = class extends PgQueryable {
@@ -48661,9 +48666,6 @@ var PrismaPgAdapterFactory = class {
     if (poolOrConfig instanceof pg2.Pool) {
       this.externalPool = poolOrConfig;
       this.config = poolOrConfig.options;
-    } else if (typeof poolOrConfig === "string") {
-      this.externalPool = null;
-      this.config = { connectionString: poolOrConfig };
     } else {
       this.externalPool = null;
       this.config = poolOrConfig;
