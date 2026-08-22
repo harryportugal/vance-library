@@ -1,0 +1,9 @@
+300 Awwwards components/
+node_modules/
+dist/
+logs/
+scratch/
+temp_blur_src/
+code.zip
+*.log
+.git
